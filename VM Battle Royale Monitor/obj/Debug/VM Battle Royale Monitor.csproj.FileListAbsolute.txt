@@ -1,0 +1,10 @@
+C:\Users\micha\source\repos\VM Battle Royale Monitor\bin\Debug\VM Battle Royale Monitor.exe.config
+C:\Users\micha\source\repos\VM Battle Royale Monitor\bin\Debug\VM Battle Royale Monitor.exe
+C:\Users\micha\source\repos\VM Battle Royale Monitor\bin\Debug\VM Battle Royale Monitor.pdb
+C:\Users\micha\source\repos\VM Battle Royale Monitor\obj\Debug\VM Battle Royale Monitor.csprojAssemblyReference.cache
+C:\Users\micha\source\repos\VM Battle Royale Monitor\obj\Debug\VM_Battle_Royale_Monitor.Form1.resources
+C:\Users\micha\source\repos\VM Battle Royale Monitor\obj\Debug\VM_Battle_Royale_Monitor.Properties.Resources.resources
+C:\Users\micha\source\repos\VM Battle Royale Monitor\obj\Debug\VM Battle Royale Monitor.csproj.GenerateResource.cache
+C:\Users\micha\source\repos\VM Battle Royale Monitor\obj\Debug\VM Battle Royale Monitor.csproj.CoreCompileInputs.cache
+C:\Users\micha\source\repos\VM Battle Royale Monitor\obj\Debug\VM Battle Royale Monitor.exe
+C:\Users\micha\source\repos\VM Battle Royale Monitor\obj\Debug\VM Battle Royale Monitor.pdb
