@@ -4,8 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace VM_Battle_Royale
 {
@@ -13,9 +11,7 @@ namespace VM_Battle_Royale
     {
         static List<Socket> _clientSockets = new List<Socket>();
         static Dictionary<string, Socket> usernames = new Dictionary<string, Socket>();
-        static Dictionary<IPAddress, VMAndPass> vmandpass = new Dictionary<IPAddress, VMAndPass>();
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        static string gameState = "START";
         static byte[] _buffer = new byte[1024];
         static void Main(string[] args)
         {
@@ -71,71 +67,9 @@ namespace VM_Battle_Royale
                 Disconnect(socket);
             }
 
-            if(command == "vm")
-            {
-                if (gameState == "START")
-                {
-                    IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
-
-                    VMAndPass convert = new VMAndPass
-                    {
-                        Ngrokurl = VMBRFormatHandler.GetValue(text, "ngrokurl"),
-                        Pass = VMBRFormatHandler.GetValue(text, "pass")
-                    };
-                    Task.Run(() => CheckIfDisconnected(socket));
-                    vmandpass.Add(end.Address, convert);
-                }
-                else if (gameState == "PLAY")
-                {
-                    VMAndPass check = new VMAndPass();
-                    IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
-                    if (vmandpass.TryGetValue(end.Address, out check))
-                    {
-                        if (check.Disconnected == true)
-                        {
-                            vmandpass[end.Address].Disconnected = false;
-                            check.Ngrokurl = VMBRFormatHandler.GetValue(text, "ngrokurl");
-                        }
-                        else if (check.Eliminated == true)
-                        {
-                            socket.Send(Encoding.ASCII.GetBytes("ERROR: You've been eliminated from this game. Please wait until the game ends to rejoin!"));
-                            socket.Disconnect(false);
-                            _clientSockets.Remove(socket);
-                        }
-                    }
-                    else
-                    {
-                        socket.Send(Encoding.ASCII.GetBytes("ERROR: Sorry, the game has already started. You can't join right now. Wait for the end of the game!"));
-                        socket.Disconnect(false);
-                        _clientSockets.Remove(socket);
-                    }
-
-
-                } else
-                {
-                    foreach(KeyValuePair<IPAddress, VMAndPass> kvp in vmandpass)
-                    { if(!kvp.Value.Eliminated)
-                        {
-                            foreach(KeyValuePair<string,Socket> kvp2 in usernames)
-                            {
-                                IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
-                                if(end.Address == kvp.Key)
-                                {
-                                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                                    dict.Add("command", "message");
-                                    dict.Add("response", "You have won VMBR! Congratulations!");    
-                                    kvp2.Value.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat("response", "You have won VMBR! Congratulations!")));
-                                }
-                            }
-                        }
-                     
-                    }
-                }
-            }
-
             if(command == "username")
             {
-                 string username = VMBRFormatHandler.GetValue(text, "playername");
+                string username = VMBRFormatHandler.GetValue(text, "playername");
                 IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
                 foreach (string v in usernames.Keys.ToList())
                 {
@@ -183,42 +117,6 @@ namespace VM_Battle_Royale
                 }
             }
 
-
-            
-            if(command == "startgame")
-            {
-                if(usernames.Count == vmandpass.Count && usernames.Count > 2 && gameState == "START" && usernames.ElementAt(0).Value == socket)
-                {
-                    gameState = "GRACE";
-                    foreach (KeyValuePair<string,Socket> kvp in usernames)
-                    {
-                        Dictionary<string, string> dict = new Dictionary<string, string>();
-                        dict.Add("command", "gamestatechange");
-                        dict.Add("gamestate", "graceperiod");
-                        socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
-                    }
-                } else
-                {
-                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                    dict.Add("command", "message");
-                    if(usernames.Count <= 2)
-                    {
-                        dict.Add("response", "Failed to start the game. Reason: There isn't enough players to start the game.");
-                    } else if(usernames.Count != vmandpass.Count)
-                    {
-                        dict.Add("response", "Failed to start the game. Reason: There aren't the same amount of VMS connected as interfaces. \n This means that some vm(s) or interface(s) have not been connected to the server.");
-                    } else if(gameState != "START")
-                    {
-                        dict.Add("response", "Failed to start the game. Reason: The game has either already started or ended.");
-                    } else if(usernames.ElementAt(0).Value != socket)
-                    {
-                        dict.Add("response", "Failed to start the game. Reason: You are not the host of this game!");
-                    }
-                    
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
-                }
-            }
-
             if(command == "showips")
             {
                 Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
@@ -245,71 +143,37 @@ namespace VM_Battle_Royale
             
             if(command == "showusernames")
             {
-                if(gameState == "PLAY")
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                dict.Add("command", "hackshowuser");
+                dict.Add("amountofusers", usernames.Count.ToString());
+                int i = 1;
+                foreach (KeyValuePair<string, Socket> v in usernames)
                 {
-                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                    dict.Add("command", "hackshowuser");
-                    dict.Add("amountofusers", usernames.Count.ToString());
-                    int i = 1;
-                    foreach (KeyValuePair<string, Socket> v in usernames)
-                    {
-                        IPEndPoint ip = (IPEndPoint)v.Value.RemoteEndPoint;
-                        dict.Add("username" + i, v.Key);
-                        i++;
-                    }
-                    string vmbr = VMBRFormatHandler.CreateVMBRFormat(dict);
-                    socket.Send(Encoding.ASCII.GetBytes(vmbr));
+                    IPEndPoint ip = (IPEndPoint)v.Value.RemoteEndPoint;
+                    dict.Add("username" + i, v.Key);
+                    i++;
                 }
-                else if (gameState == "GRACE")
-                {
-                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                    dict.Add("command", "message");
-                    dict.Add("response", "ERROR: Cannot hack at the momment. Reason: The 1 minute grace period is still on...WHAT ARE YOU EVEN DOING. PROTECT YOUR VM!");
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
-                }
-                else if (gameState == "START")
-                {
-                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                    dict.Add("command", "message");
-                    dict.Add("response", "ERROR: The game hasn't even started yet.");
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
-                }
-                else if (gameState == "END")
-                {
-                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                    dict.Add("command", "message");
-                    dict.Add("response", "ERROR: The game is over.");
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
-
-                }
-
+                string vmbr = VMBRFormatHandler.CreateVMBRFormat(dict);
+                socket.Send(Encoding.ASCII.GetBytes(vmbr));
             }
 
             if(command == "hackperson")
             {
-                if(gameState == "PLAY")
-                {
-                    Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
-                    vmbrconvert.Add("command", "hackperson");
-                    vmbrconvert.Add("response", "You got hacked!");
-                    string hackperson = VMBRFormatHandler.GetValue(text, "persontobehacked");
-                    string responsesend = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
-                    Socket sockettohack;
-                    usernames.TryGetValue(hackperson, out sockettohack);
-                    sockettohack.Send(Encoding.ASCII.GetBytes(responsesend));
-                    Dictionary<string, string> vmbrconvert2 = new Dictionary<string, string>();
-                    vmbrconvert2.Add("command", "hackedperson");
-                    vmbrconvert2.Add("username", hackperson);
-                    VMAndPass convert = new VMAndPass();
-                    Console.WriteLine(vmandpass);
-                    IPEndPoint end = (IPEndPoint)sockettohack.RemoteEndPoint;
-                    vmandpass.TryGetValue(end.Address, out convert);
-                    vmbrconvert2.Add("pass", convert.Pass);
-                    vmbrconvert2.Add("ip", convert.Ngrokurl);
-                    string responsesend2 = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert2);
-                    socket.Send(Encoding.ASCII.GetBytes(responsesend2));
-                } 
-                
+                Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
+                vmbrconvert.Add("command", "hackperson");
+                vmbrconvert.Add("response", "You got hacked!");
+                string hackperson = VMBRFormatHandler.GetValue(text, "persontobehacked");
+                string responsesend = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
+                Socket sockettohack;
+                usernames.TryGetValue(hackperson, out sockettohack);
+                 sockettohack.Send(Encoding.ASCII.GetBytes(responsesend));
+                Dictionary<string, string> vmbrconvert2 = new Dictionary<string, string>();
+                vmbrconvert2.Add("command", "hackedperson");
+                vmbrconvert2.Add("username", hackperson);
+                IPEndPoint ip = (IPEndPoint)sockettohack.RemoteEndPoint;
+                vmbrconvert2.Add("ip", ip.Address.ToString());
+                string responsesend2 = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert2);
+                socket.Send(Encoding.ASCII.GetBytes(responsesend2));
             }
             
             try
@@ -346,47 +210,5 @@ namespace VM_Battle_Royale
             socket.Disconnect(false);
             _clientSockets.Remove(socket);
         }
-
-        public static void CheckIfDisconnected(Socket socket)
-        {
-            while(true)
-            {
-                Thread.Sleep(30000);
-                if (!socket.Connected)
-                {
-                    IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
-                    vmandpass[end.Address].Disconnected = true;
-                    Thread.Sleep(120000);
-                    CheckIfEliminated(socket);
-                }
-            }
-        }
-
-        public static void CheckIfEliminated(Socket socket)
-        {
-            if(!socket.Connected)
-            {
-                IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
-                vmandpass[end.Address].Eliminated = true;
-                foreach(KeyValuePair<string,Socket> kvp in usernames)
-                {
-                    IPEndPoint end2 = (IPEndPoint)kvp.Value.RemoteEndPoint;
-                    if(end2.Address == end.Address)
-                    {
-                        kvp.Value.Send(Encoding.ASCII.GetBytes("RIP! " + kvp.Key + "has been eliminated from VMBR!"));
-                    }
-                    
-                }
-            }
-        }
-    }
-
-    class VMAndPass
-    {
-        public string Ngrokurl { get; set; }
-        public string Pass { get; set; }
-        public bool Eliminated { get; set; }
-        
-        public bool Disconnected { get; set; }
     }
 }

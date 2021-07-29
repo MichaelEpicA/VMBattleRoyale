@@ -1,32 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\micha\\source\\repos\\VM Battle Royale Server\\VM Battle Royale Server.csproj": {}
+    "/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale Server/VM Battle Royale Server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\micha\\source\\repos\\VM Battle Royale Server\\VM Battle Royale Server.csproj": {
+    "/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale Server/VM Battle Royale Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\micha\\source\\repos\\VM Battle Royale Server\\VM Battle Royale Server.csproj",
+        "projectUniqueName": "/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale Server/VM Battle Royale Server.csproj",
         "projectName": "VM Battle Royale Server",
-        "projectPath": "C:\\Users\\micha\\source\\repos\\VM Battle Royale Server\\VM Battle Royale Server.csproj",
-        "packagesPath": "C:\\Users\\micha\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\micha\\source\\repos\\VM Battle Royale Server\\obj\\",
+        "projectPath": "/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale Server/VM Battle Royale Server.csproj",
+        "packagesPath": "/home/monkey/.nuget/packages/",
+        "outputPath": "/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale Server/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\micha\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+          "/home/monkey/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -54,12 +47,22 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[3.1.10, 3.1.10]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.linux-x64",
+              "version": "[3.1.16, 3.1.16]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.205\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/5.0.204/RuntimeIdentifierGraph.json"
         }
       }
     }

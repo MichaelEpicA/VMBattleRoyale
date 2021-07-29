@@ -1,0 +1,13 @@
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/bin/Debug/netcoreapp3.1/VM Battle Royale VM Setup
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/bin/Debug/netcoreapp3.1/VM Battle Royale VM Setup.deps.json
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/bin/Debug/netcoreapp3.1/VM Battle Royale VM Setup.runtimeconfig.json
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/bin/Debug/netcoreapp3.1/VM Battle Royale VM Setup.runtimeconfig.dev.json
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/bin/Debug/netcoreapp3.1/VM Battle Royale VM Setup.dll
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/bin/Debug/netcoreapp3.1/VM Battle Royale VM Setup.pdb
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/obj/Debug/netcoreapp3.1/VM Battle Royale VM Setup.csprojAssemblyReference.cache
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/obj/Debug/netcoreapp3.1/VM Battle Royale VM Setup.AssemblyInfoInputs.cache
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/obj/Debug/netcoreapp3.1/VM Battle Royale VM Setup.AssemblyInfo.cs
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/obj/Debug/netcoreapp3.1/VM Battle Royale VM Setup.csproj.CoreCompileInputs.cache
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/obj/Debug/netcoreapp3.1/VM Battle Royale VM Setup.dll
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/obj/Debug/netcoreapp3.1/VM Battle Royale VM Setup.pdb
+/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/obj/Debug/netcoreapp3.1/VM Battle Royale VM Setup.genruntimeconfig.cache

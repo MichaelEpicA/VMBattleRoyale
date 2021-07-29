@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "mZ4QnDurIWk6ZEplrgO87jx3TGZvWfuQaj+mvhMqtEWPC/8q697wgDqpTS2OadwbX2yg9QRpzRcWE/Ml/7YC0A==",
+  "dgSpecHash": "31l4Xv4qMp/5lGAGfKB/MDJOeWXRQcuVXlhrSuTeOv5Vfu9EhQG+PFTZkk2/3lek7dKN8+t3oER9yIzF40KnzA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\micha\\source\\repos\\VM Battle Royale VM\\VM Battle Royale VM Setup.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "/home/monkey/SourceCode/vmbattleroyale/VM Battle Royale VM/VM Battle Royale VM Setup.csproj",
+  "expectedPackageFiles": [
+    "/home/monkey/.nuget/packages/microsoft.aspnetcore.app.ref/3.1.10/microsoft.aspnetcore.app.ref.3.1.10.nupkg.sha512",
+    "/home/monkey/.nuget/packages/microsoft.netcore.app.host.linux-x64/3.1.16/microsoft.netcore.app.host.linux-x64.3.1.16.nupkg.sha512"
+  ],
   "logs": []
 }

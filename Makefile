@@ -1,17 +1,11 @@
-CSC=csc
-GOC=go
-GOF=GOOS=windows GOARCH=amd64
-GBCMD=$(GOF) $(GOC) build -o bin/$(shell find src/$@ $< -type f -iregex ".*\.go" | sed -e 's/\.go/\.exe/g' -e 's/src\///g') \
-$(shell find src/$@ $< -type f -iregex ".*\.go")
-CSBCMD=$(CSC) -out:bin/$(shell find src/$@ $< -type f -iregex ".*\.cs" | sed -e 's/\.cs/\.exe/g' -e 's/src\///g') \
-$(shell find src/$@ $< -type f -iregex ".*\.cs")
-all: vm host
+all: vm host server monitor
 vm:
-	mkdir -p bin/$@ $<
-	$(GBCMD)
-	$(CSBCMD)
+	dotnet build "VM Battle Royale VM/VM Battle Royale VM Setup.csproj"
 host:
-	mkdir -p bin/$@ $<
-	$(CSBCMD)
+	dotnet build "VM Battle Royale Host/VM Battle Royale Host.csproj"
+monitor:
+	dotnet build "VM Battle Royale Monitor/VM Battle Royale Monitor.csproj"
+server:
+	dotnet build "VM Battle Royale Server/VM Battle Royale Server.csproj"
 clean:
-	rm -r bin
+	rm -r */bin */obj
