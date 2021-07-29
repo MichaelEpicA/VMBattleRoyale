@@ -6,33 +6,133 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace VM_Battle_Royale_Monitor
+namespace VM_Battle_Royale
 {
     public partial class Form1 : Form
     {
+        private static Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         public Form1()
         {
             InitializeComponent();
- 
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length != 1)
+            {
+                if (args[1] != null && args[1] == "-setupfinished")
+                {
+                    ReconnectToServer();
+                }
+            }
+            else
+            {
+                if (!File.Exists("vncpasssetup.txt"))
+                {
+                    MessageBox.Show("Failed to find password. Please run the VM Setup program before this. Thank you.", "VM Battle Royale Monitor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(-1);
+                }
+                SetupMonitor();
+            }
+            
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+
+
+        private void ReconnectToServer()
+        {
+            string newngrokurl = ReRunPrograms();
+            MessageBox.Show("This is the ReconnectToServer function.");
+            while (!socket.Connected)
+            {
+                socket.Connect(IPAddress.Loopback, 13000);
+            }
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "vm");
+            dict.Add("ngrokurl", newngrokurl);
+            string vmbrformat = VMBRFormatHandler.CreateVMBRFormat(dict);
+            socket.Send(Encoding.ASCII.GetBytes(vmbrformat));
+            byte[] responsebuffer = { };
+            socket.Receive(responsebuffer);
+            string response = VMBRFormatHandler.GetValue(responsebuffer, "response");
+            MessageBox.Show(response);
+        }
+
+        private void SetupMonitor()
+        {
+           string ngrokurl = ReRunPrograms();
+            while (!socket.Connected)
+            {
+                socket.Connect(IPAddress.Loopback, 13000);
+            }
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "vm");
+            dict.Add("ngrokurl", ngrokurl);
+            dict.Add("pass", "ass");
+            IPEndPoint endPoint = (IPEndPoint)socket.LocalEndPoint;
+            dict.Add("ip", endPoint.Address.ToString() + endPoint.Port.ToString());
+            socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+            File.Delete("vncpasssetup.txt");
+            RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",true);
+            string test = Environment.GetCommandLineArgs()[0] + @"-setupfinished";
+            startup.SetValue("VMBR Monitor", test.Insert(0,'"'.ToString()).Insert(Environment.GetCommandLineArgs()[0].Length + 1, '"'.ToString()));
+        }
+
+        private string ReRunPrograms()
         {
             Process p = new Process();
             p.StartInfo.FileName = "C:\\Program Files\\VM Battle Royale\\ngrok.exe";
             p.StartInfo.Arguments = "http 80";
-            p.StartInfo.CreateNoWindow = true;
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.CreateNoWindow = false;
             p.Start();
-            using (StreamReader reader = p.StandardOutput)
+            Thread.Sleep(15000);
+            System.Net.WebClient webClient = new System.Net.WebClient();
+            byte[] data = webClient.DownloadData("http://127.0.0.1:4040/api/tunnels");
+            string webData = Encoding.ASCII.GetString(data);
+            JObject obj = JObject.Parse(webData);
+            JValue tunnels = obj.SelectToken("tunnels")[0].ToObject<JObject>().Value<JValue>("public_url");
+            try
             {
-                MessageBox.Show(reader.ReadLine());
+                ServiceController service = new ServiceController("vncserver");
+                service.Start();
+            }
+            catch
+            {
+
+            }
+            return tunnels.Value.ToString();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            if (this.Visible == true)
+            {
+                if (this.WindowState == FormWindowState.Minimized)
+                {
+                    Hide();
+                }
+            }
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            if (this.Visible == true)
+            {
+                if (this.WindowState == FormWindowState.Minimized)
+                {
+                    Hide();
+                }
             }
         }
     }
-    }
+}

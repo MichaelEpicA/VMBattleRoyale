@@ -10,9 +10,10 @@ namespace VM_Battle_Royale
     {
         static byte[] _buffer = new byte[1024];
         private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private static string[] easywords = {   };
+        private static string[] easywords = {"remove", "load", "signal", "right", "part", "url", "event", "stat", "call", "anon", "init", "dir", "add", "cookies", "handle", "ping", "ghost", "count", "loop", "temp","status","xml", "num", "bytes", "join", "intel", "reset", "info", "global", "size", "port", "get", "http", "emit", "delete", "buffer", "root", "file", "write", "socket", "bit", "key", "pass", "host", "val", "send", "list", "poly", "data", "log", "user", "upload", "set", "system", "com", "type", "add", "net", "client", "domain", "left", "point"};
         private static List<string> usernames = new List<string>();
         public static int asyncrec = new int();
+        public static string gameState = "START";
         static bool waiting;
         static void Main(string[] args)
         {
@@ -61,7 +62,6 @@ namespace VM_Battle_Royale
                 {
                     Console.WriteLine("Enter a request.");
                     string input = Console.ReadLine();
-                    Console.WriteLine("Available commands: username.");
                     if (input == "username")
                     {
                         Console.WriteLine("What username would you like to use?");
@@ -73,21 +73,35 @@ namespace VM_Battle_Royale
                         _clientSocket.Send(Encoding.ASCII.GetBytes(vmbrusername));
                         asyncrec = 1;
                     }
-                    else if (input == "showips")
-                    {
-                        Console.WriteLine("Showing all vm ips....");
-                        string vmbrcommand = VMBRFormatHandler.CreateVMBRFormat("command", "showips");
-                        _clientSocket.Send(Encoding.ASCII.GetBytes(vmbrcommand));
-                        asyncrec = 1;
-                    }
 
                     else if (input == "hack")
                     {
-                        HackFunction();
+                        if(gameState == "PLAY")
+                        {
+                            HackFunction();
+                        } else if(gameState == "GRACE")
+                        {
+                            Console.WriteLine("ERROR: Unable to hack at this time. Reason: The grace period is still on.");
+                        } else if(gameState == "START")
+                        {
+                            Console.WriteLine("ERROR: Unable to hack at this time. Reason: The game hasn't started yet.");
+                        } else
+                        {
+                            Console.WriteLine("ERROR: Unable to hack at this time. Reason: The game is over.");
+                        }
+                    }
+                    else if (input == "startgame")
+                    {
+                        Dictionary<string, string> dict = new Dictionary<string, string>();
+                        dict.Add("command", input);
+                        string vmbrstartgame = VMBRFormatHandler.CreateVMBRFormat(dict);
+                        _clientSocket.Send(Encoding.ASCII.GetBytes(vmbrstartgame));
+                        asyncrec = 1;
                     }
                     else
                     {
                         Console.WriteLine("Invalid request.");
+                        Console.WriteLine("Available commands: username, hack, startgame");
                     }
                 }
                 else
@@ -158,6 +172,17 @@ namespace VM_Battle_Royale
             {
                 Console.WriteLine("Hacked " + VMBRFormatHandler.GetValue(tempbuffer, "username") + "!");
                 Console.WriteLine("IP Address for " + VMBRFormatHandler.GetValue(tempbuffer, "username") + ": " + VMBRFormatHandler.GetValue(tempbuffer, "ip"));
+                Console.WriteLine("Password for " + VMBRFormatHandler.GetValue(tempbuffer, "username") + ": " + VMBRFormatHandler.GetValue(tempbuffer, "pass"));
+            } else if(value == "message")
+            {
+                Console.WriteLine(VMBRFormatHandler.GetValue(tempbuffer, "response"));
+                asyncrec = 0;
+                _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
+            } else if(value == "gamestatechange")
+            {
+                gameState = VMBRFormatHandler.GetValue(tempbuffer,"gamestate");
+                asyncrec = 0;
+                _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             }
         }
 
@@ -179,7 +204,7 @@ namespace VM_Battle_Royale
                 {
                     return hackperson;
                 }
-            }
+            }   
             Console.WriteLine("Invalid input, please retry.");
             hackperson = WhoToHack();
             return hackperson;

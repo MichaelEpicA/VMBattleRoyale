@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VM Battle Royale VM Setup",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VM Battle Royale Monitor", "..\VM Battle Royale Monitor\VM Battle Royale Monitor.csproj", "{9EB98455-5EEB-4955-9FEB-4A58984AE93E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testing", "..\testing\testing.csproj", "{D8A247C2-45EC-42C4-A359-9AEE242089A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{9EB98455-5EEB-4955-9FEB-4A58984AE93E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EB98455-5EEB-4955-9FEB-4A58984AE93E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EB98455-5EEB-4955-9FEB-4A58984AE93E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8A247C2-45EC-42C4-A359-9AEE242089A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8A247C2-45EC-42C4-A359-9AEE242089A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8A247C2-45EC-42C4-A359-9AEE242089A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8A247C2-45EC-42C4-A359-9AEE242089A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
