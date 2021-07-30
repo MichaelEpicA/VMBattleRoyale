@@ -26,7 +26,7 @@ namespace VM_Battle_Royale
 
         static void SetupServer()
         {
-            Console.Write("Setting up test VMBR server...");
+                Console.Write("Setting up test VMBR server...");
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
             _serversocket.Listen(5);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
@@ -67,7 +67,7 @@ namespace VM_Battle_Royale
             byte[] tempbuffer = new byte[recieved];
             Array.Copy(_buffer, tempbuffer, recieved);
             string text = Encoding.Unicode.GetString(tempbuffer);
-            string command = JObject.Parse(text).Value<string>("command");
+            string command = JObject.Parse(text)["command"].ToString();
             if(command == "dc")
             {
                 Disconnect(socket);
@@ -137,7 +137,7 @@ namespace VM_Battle_Royale
 
             if(command == "username")
             {
-                 string username = JObject.Parse(text).Value<string>( "playername");
+                string username = JObject.Parse(text)["playername"].ToString();
                 IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
                 foreach (string v in usernames.Keys.ToList())
                 {
@@ -197,7 +197,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
                         dict.Add("gamestate", "graceperiod");
-                        socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
+                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                 } else
                 {
@@ -217,7 +217,7 @@ namespace VM_Battle_Royale
                         dict.Add("response", "Failed to start the game. Reason: You are not the host of this game!");
                     }
                     
-                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
+                    socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
             }
 

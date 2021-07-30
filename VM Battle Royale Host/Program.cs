@@ -124,9 +124,9 @@ namespace VM_Battle_Royale
                 asyncrec = socket.EndReceive(ar);
             byte[] tempbuffer = new byte[asyncrec];
             Array.Copy(_buffer, tempbuffer, asyncrec);
-            string text = Encoding.ASCII.GetString(tempbuffer);
-           string value = JObject.Parse(text).Value<string>("command");
-            string response = JObject.Parse(text).Value<string>("response");
+            string text = Encoding.Unicode.GetString(tempbuffer);
+            string value = JObject.Parse(text)["command"].ToString();
+            string response = JObject.Parse(text)["response"].ToString();
             if (value == "username")
             {   
                 Console.WriteLine(response);
@@ -134,28 +134,28 @@ namespace VM_Battle_Royale
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "showips")
             {
-                string numberofips = JObject.Parse(text).Value<string>("amountofips");
+                string numberofips = JObject.Parse(text)["amountofips"].ToString();
                 for(int i = 0; i <= Int32.Parse(numberofips); i++)
                 {
                     if (i == 0)
                     {
                         i++;
                     }
-                    string ip = JObject.Parse(text).Value<string>("ip" + i);
+                    string ip = JObject.Parse(text)["ip" + 1].ToString();
                     Console.WriteLine("IP Address: " + ip);
                 }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackshowuser")
             {
-                string vmbrnumbers = JObject.Parse(text).Value<string>("amountofusers");
+                string vmbrnumbers = JObject.Parse(text)["amountofusers"].ToString();
                 for (int i = 0; i <= Int32.Parse(vmbrnumbers); i++)
                 {
                     if (i == 0)
                     {
                         i++;
                     }
-                    string vmbrusername = JObject.Parse(text).Value<string>("username" + i);
+                    string vmbrusername = JObject.Parse(text)["username" + 1].ToString();
                     Console.WriteLine("Username: " + vmbrusername);
                     usernames.Add(vmbrusername);
                 }
@@ -172,17 +172,17 @@ namespace VM_Battle_Royale
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackedperson")
             {
-                Console.WriteLine("Hacked " + JObject.Parse(text).Value<string>("username") + "!");
-                Console.WriteLine("IP Address for " + JObject.Parse(text).Value<string>("username") + ": " + JObject.Parse(text).Value<string>("ip"));
-                Console.WriteLine("Password for " + JObject.Parse(text).Value<string>("username") + ": " + JObject.Parse(text).Value<string>("pass"));
+                Console.WriteLine("Hacked " + JObject.Parse(text)["username"] + "!");
+                Console.WriteLine("IP Address for " + JObject.Parse(text)["username"] + ": " + JObject.Parse(text)["ip"]);
+                Console.WriteLine("Password for " + JObject.Parse(text)["username"]+ ": " + JObject.Parse(text)["pass"]);
             } else if(value == "message")
             {
-                Console.WriteLine(JObject.Parse(text).Value<string>("response"));
+                Console.WriteLine(JObject.Parse(text)["response"]);
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "gamestatechange")
             {
-                gameState = JObject.Parse(text).Value<string>("gamestate");
+                gameState = JObject.Parse(text)["gamestate"].ToString();
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             }
