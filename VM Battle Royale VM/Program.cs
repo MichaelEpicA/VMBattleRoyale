@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using System.Diagnostics;
 
-namespace VM_Battle_Royale_VM
+namespace VM_Battle_Royale
 {
     class Program
     {
@@ -65,9 +65,10 @@ namespace VM_Battle_Royale_VM
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 FileName = "cmd",
-                Arguments = "/c echo " + input + " | " + vncserver + " -weakpwd -type AdminPassword -service",
+                Arguments = @"/c echo """ + input + @""" | " + vncserver + " -weakpwd -type AdminPassword -service",
                 Verb = "runas"
             };
+            File.WriteAllText("vncpasssetup.txt", input);
             Process.Start(processStartInfo).WaitForExit();
         }
     }

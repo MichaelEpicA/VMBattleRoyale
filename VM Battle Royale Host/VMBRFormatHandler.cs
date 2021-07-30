@@ -11,7 +11,7 @@ namespace VM_Battle_Royale
 
         public static string GetValue(string vmbrdata, string key)
         {
-            MemoryStream stream = new MemoryStream(Encoding.ASCII.GetBytes(vmbrdata));
+            MemoryStream stream = new MemoryStream(Encoding.Unicode.GetBytes(vmbrdata));
             using (StreamReader reader = new StreamReader(stream))
             {
 

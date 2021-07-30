@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VM Battle Royale Host", "..
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VM Battle Royale VM Setup", "..\VM Battle Royale VM\VM Battle Royale VM Setup.csproj", "{46FBD70C-4E7A-4A0C-8036-2049D75C3FAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VM Battle Royale Monitor", "..\VM Battle Royale Monitor\VM Battle Royale Monitor.csproj", "{9EB98455-5EEB-4955-9FEB-4A58984AE93E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VM Battle Royale Monitor", "..\VM Battle Royale Monitor\VM Battle Royale Monitor.csproj", "{1F411D58-61E0-4CDC-AA05-BF74A4D3B0CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{46FBD70C-4E7A-4A0C-8036-2049D75C3FAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46FBD70C-4E7A-4A0C-8036-2049D75C3FAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46FBD70C-4E7A-4A0C-8036-2049D75C3FAB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9EB98455-5EEB-4955-9FEB-4A58984AE93E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9EB98455-5EEB-4955-9FEB-4A58984AE93E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9EB98455-5EEB-4955-9FEB-4A58984AE93E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9EB98455-5EEB-4955-9FEB-4A58984AE93E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F411D58-61E0-4CDC-AA05-BF74A4D3B0CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F411D58-61E0-4CDC-AA05-BF74A4D3B0CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F411D58-61E0-4CDC-AA05-BF74A4D3B0CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F411D58-61E0-4CDC-AA05-BF74A4D3B0CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
