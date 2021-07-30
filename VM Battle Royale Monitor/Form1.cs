@@ -63,7 +63,7 @@ namespace VM_Battle_Royale
             socket.Send(Encoding.ASCII.GetBytes(vmbrformat));
             byte[] responsebuffer = { };
             socket.Receive(responsebuffer);
-            string response = JsonConvert.DeserializeObject<string>("response");
+            string response = JObject.Parse(Encoding.ASCII.GetString(responsebuffer)).Value<string>("response");
         }
 
         private void SetupMonitor()

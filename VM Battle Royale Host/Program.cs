@@ -4,6 +4,7 @@
     using System.Net.Sockets;
     using System.Text;
     using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace VM_Battle_Royale
 {
@@ -124,8 +125,8 @@ namespace VM_Battle_Royale
             byte[] tempbuffer = new byte[asyncrec];
             Array.Copy(_buffer, tempbuffer, asyncrec);
             string text = Encoding.ASCII.GetString(tempbuffer);
-           string value = JsonConvert.DeserializeObject<string>("command");
-            string response = JsonConvert.DeserializeObject<string>("response");
+           string value = JObject.Parse(text).Value<string>("command");
+            string response = JObject.Parse(text).Value<string>("response");
             if (value == "username")
             {   
                 Console.WriteLine(response);
@@ -133,28 +134,28 @@ namespace VM_Battle_Royale
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "showips")
             {
-                string numberofips = JsonConvert.DeserializeObject<string>("amountofips");
+                string numberofips = JObject.Parse(text).Value<string>("amountofips");
                 for(int i = 0; i <= Int32.Parse(numberofips); i++)
                 {
                     if (i == 0)
                     {
                         i++;
                     }
-                    string ip = JsonConvert.DeserializeObject<string>("ip" + i);
+                    string ip = JObject.Parse(text).Value<string>("ip" + i);
                     Console.WriteLine("IP Address: " + ip);
                 }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackshowuser")
             {
-                string vmbrnumbers = JsonConvert.DeserializeObject<string>("amountofusers");
+                string vmbrnumbers = JObject.Parse(text).Value<string>("amountofusers");
                 for (int i = 0; i <= Int32.Parse(vmbrnumbers); i++)
                 {
                     if (i == 0)
                     {
                         i++;
                     }
-                    string vmbrusername = JsonConvert.DeserializeObject<string>("username" + i);
+                    string vmbrusername = JObject.Parse(text).Value<string>("username" + i);
                     Console.WriteLine("Username: " + vmbrusername);
                     usernames.Add(vmbrusername);
                 }
@@ -171,17 +172,17 @@ namespace VM_Battle_Royale
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackedperson")
             {
-                Console.WriteLine("Hacked " + JsonConvert.DeserializeObject<string>("username") + "!");
-                Console.WriteLine("IP Address for " + JsonConvert.DeserializeObject<string>("username") + ": " + JsonConvert.DeserializeObject<string>("ip"));
-                Console.WriteLine("Password for " + JsonConvert.DeserializeObject<string>("username") + ": " + JsonConvert.DeserializeObject<string>("pass"));
+                Console.WriteLine("Hacked " + JObject.Parse(text).Value<string>("username") + "!");
+                Console.WriteLine("IP Address for " + JObject.Parse(text).Value<string>("username") + ": " + JObject.Parse(text).Value<string>("ip"));
+                Console.WriteLine("Password for " + JObject.Parse(text).Value<string>("username") + ": " + JObject.Parse(text).Value<string>("pass"));
             } else if(value == "message")
             {
-                Console.WriteLine(JsonConvert.DeserializeObject<string>("response"));
+                Console.WriteLine(JObject.Parse(text).Value<string>("response"));
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "gamestatechange")
             {
-                gameState = JsonConvert.DeserializeObject<string>("gamestate");
+                gameState = JObject.Parse(text).Value<string>("gamestate");
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             }

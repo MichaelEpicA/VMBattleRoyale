@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,7 +67,7 @@ namespace VM_Battle_Royale
             byte[] tempbuffer = new byte[recieved];
             Array.Copy(_buffer, tempbuffer, recieved);
             string text = Encoding.Unicode.GetString(tempbuffer);
-            string command = JsonConvert.DeserializeObject<string>( "command");
+            string command = JObject.Parse(text).Value<string>("command");
             if(command == "dc")
             {
                 Disconnect(socket);
@@ -80,8 +81,8 @@ namespace VM_Battle_Royale
 
                     VMAndPass convert = new VMAndPass
                     {
-                        Ngrokurl = JsonConvert.DeserializeObject<string>( "ngrokurl"),
-                        Pass = JsonConvert.DeserializeObject<string>( "pass")
+                        Ngrokurl = JObject.Parse(text).Value<string>( "ngrokurl"),
+                        Pass = JObject.Parse(text).Value<string>( "pass")
                     };
                     Task.Run(() => CheckIfDisconnected(socket));
                     vmandpass.Add(end.Address, convert);
@@ -95,7 +96,7 @@ namespace VM_Battle_Royale
                         if (check.Disconnected == true)
                         {
                             vmandpass[end.Address].Disconnected = false;
-                            check.Ngrokurl = JsonConvert.DeserializeObject<string>( "ngrokurl");
+                            check.Ngrokurl = JObject.Parse(text).Value<string>( "ngrokurl");
                         }
                         else if (check.Eliminated == true)
                         {
@@ -136,7 +137,7 @@ namespace VM_Battle_Royale
 
             if(command == "username")
             {
-                 string username = JsonConvert.DeserializeObject<string>( "playername");
+                 string username = JObject.Parse(text).Value<string>( "playername");
                 IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
                 foreach (string v in usernames.Keys.ToList())
                 {
@@ -180,7 +181,7 @@ namespace VM_Battle_Royale
                     vmbrconvert.Add("command", command);
                     vmbrconvert.Add("response", "Username set to " + username + "!");
                     string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
-                    socket.Send(Encoding.ASCII.GetBytes(convertedvmbr));
+                    socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
                 }
             }
 
@@ -293,7 +294,7 @@ namespace VM_Battle_Royale
                     Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                     vmbrconvert.Add("command", "hackperson");
                     vmbrconvert.Add("response", "You got hacked!");
-                    string hackperson = JsonConvert.DeserializeObject<string>( "persontobehacked");
+                    string hackperson = JObject.Parse(text).Value<string>( "persontobehacked");
                     string responsesend = JsonConvert.SerializeObject(vmbrconvert);
                     Socket sockettohack;
                     usernames.TryGetValue(hackperson, out sockettohack);
