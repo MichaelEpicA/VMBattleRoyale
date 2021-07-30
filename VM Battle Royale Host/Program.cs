@@ -95,7 +95,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", input);
                         string vmbrstartgame = VMBRFormatHandler.CreateVMBRFormat(dict);
-                        _clientSocket.Send(Encoding.ASCII.GetBytes(vmbrstartgame));
+                        _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrstartgame));
                         asyncrec = 1;
                     }
                     else
