@@ -59,12 +59,11 @@ namespace VM_Battle_Royale
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "vm");
             dict.Add("ngrokurl", newngrokurl);
-            string vmbrformat = VMBRFormatHandler.CreateVMBRFormat(dict);
+            string vmbrformat = JsonConvert.SerializeObject(dict);
             socket.Send(Encoding.ASCII.GetBytes(vmbrformat));
             byte[] responsebuffer = { };
             socket.Receive(responsebuffer);
-            string response = VMBRFormatHandler.GetValue(responsebuffer, "response");
-            MessageBox.Show(response);
+            string response = JsonConvert.DeserializeObject<string>("response");
         }
 
         private void SetupMonitor()
@@ -80,7 +79,7 @@ namespace VM_Battle_Royale
             dict.Add("pass", File.ReadAllText("vncpasssetup.txt"));
             IPEndPoint endPoint = (IPEndPoint)socket.LocalEndPoint;
             dict.Add("ip", endPoint.Address.ToString() + endPoint.Port.ToString());
-            socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+            socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
             File.Delete("vncpasssetup.txt");
             RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);

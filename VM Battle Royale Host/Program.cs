@@ -3,6 +3,7 @@
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
+    using Newtonsoft.Json;
 
 namespace VM_Battle_Royale
 {
@@ -46,7 +47,7 @@ namespace VM_Battle_Royale
              Dictionary<string, string> dict = new Dictionary<string, string>();
              dict.Add("command", "username");
              dict.Add("playername", username);
-             string vmbrusername = VMBRFormatHandler.CreateVMBRFormat(dict);
+            string vmbrusername = JsonConvert.SerializeObject(dict);
              _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
               asyncrec = 1;
             SendLoop();
@@ -69,7 +70,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", input);
                         dict.Add("playername", username);
-                        string vmbrusername = VMBRFormatHandler.CreateVMBRFormat(dict);
+                        string vmbrusername = JsonConvert.SerializeObject(dict);
                         _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
                         asyncrec = 1;
                     }
@@ -94,7 +95,7 @@ namespace VM_Battle_Royale
                     {
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", input);
-                        string vmbrstartgame = VMBRFormatHandler.CreateVMBRFormat(dict);
+                        string vmbrstartgame = JsonConvert.SerializeObject(dict);
                         _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrstartgame));
                         asyncrec = 1;
                     }
@@ -123,8 +124,8 @@ namespace VM_Battle_Royale
             byte[] tempbuffer = new byte[asyncrec];
             Array.Copy(_buffer, tempbuffer, asyncrec);
             string text = Encoding.ASCII.GetString(tempbuffer);
-           string value = VMBRFormatHandler.GetValue(text, "command");
-            string response = VMBRFormatHandler.GetValue(text, "response");
+           string value = JsonConvert.DeserializeObject<string>("command");
+            string response = JsonConvert.DeserializeObject<string>("response");
             if (value == "username")
             {   
                 Console.WriteLine(response);
@@ -132,28 +133,28 @@ namespace VM_Battle_Royale
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "showips")
             {
-                string numberofips = VMBRFormatHandler.GetValue(text,"amountofips");
+                string numberofips = JsonConvert.DeserializeObject<string>("amountofips");
                 for(int i = 0; i <= Int32.Parse(numberofips); i++)
                 {
                     if (i == 0)
                     {
                         i++;
                     }
-                    string ip = VMBRFormatHandler.GetValue(text, "ip" + i);
+                    string ip = JsonConvert.DeserializeObject<string>("ip" + i);
                     Console.WriteLine("IP Address: " + ip);
                 }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackshowuser")
             {
-                string vmbrnumbers = VMBRFormatHandler.GetValue(Encoding.Unicode.GetString(tempbuffer), "amountofusers");
+                string vmbrnumbers = JsonConvert.DeserializeObject<string>("amountofusers");
                 for (int i = 0; i <= Int32.Parse(vmbrnumbers); i++)
                 {
                     if (i == 0)
                     {
                         i++;
                     }
-                    string vmbrusername = VMBRFormatHandler.GetValue(Encoding.Unicode.GetString(tempbuffer), "username" + i);
+                    string vmbrusername = JsonConvert.DeserializeObject<string>("username" + i);
                     Console.WriteLine("Username: " + vmbrusername);
                     usernames.Add(vmbrusername);
                 }
@@ -162,7 +163,7 @@ namespace VM_Battle_Royale
                 dict.Add("command", "hackperson");
                 dict.Add("persontobehacked", exists);
                 HackTUI();
-                _clientSocket.Send(Encoding.Unicode.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+                _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
             } else if(value == "hackperson")
             {
                 Console.WriteLine(response);
@@ -170,17 +171,17 @@ namespace VM_Battle_Royale
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackedperson")
             {
-                Console.WriteLine("Hacked " + VMBRFormatHandler.GetValue(tempbuffer, "username") + "!");
-                Console.WriteLine("IP Address for " + VMBRFormatHandler.GetValue(tempbuffer, "username") + ": " + VMBRFormatHandler.GetValue(tempbuffer, "ip"));
-                Console.WriteLine("Password for " + VMBRFormatHandler.GetValue(tempbuffer, "username") + ": " + VMBRFormatHandler.GetValue(tempbuffer, "pass"));
+                Console.WriteLine("Hacked " + JsonConvert.DeserializeObject<string>("username") + "!");
+                Console.WriteLine("IP Address for " + JsonConvert.DeserializeObject<string>("username") + ": " + JsonConvert.DeserializeObject<string>("ip"));
+                Console.WriteLine("Password for " + JsonConvert.DeserializeObject<string>("username") + ": " + JsonConvert.DeserializeObject<string>("pass"));
             } else if(value == "message")
             {
-                Console.WriteLine(VMBRFormatHandler.GetValue(tempbuffer, "response"));
+                Console.WriteLine(JsonConvert.DeserializeObject<string>("response"));
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "gamestatechange")
             {
-                gameState = VMBRFormatHandler.GetValue(tempbuffer,"gamestate");
+                gameState = JsonConvert.DeserializeObject<string>("gamestate");
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             }
@@ -189,7 +190,9 @@ namespace VM_Battle_Royale
         private static void HackFunction()
         {
             Console.WriteLine("Listing usernames....");
-            string vmbrcommand = VMBRFormatHandler.CreateVMBRFormat("command", "showusernames");
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "showusername");
+            string vmbrcommand = JsonConvert.SerializeObject(dict);
             _clientSocket.Send(Encoding.ASCII.GetBytes(vmbrcommand));
             asyncrec = 1;
         }

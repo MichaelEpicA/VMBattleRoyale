@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -65,7 +66,7 @@ namespace VM_Battle_Royale
             byte[] tempbuffer = new byte[recieved];
             Array.Copy(_buffer, tempbuffer, recieved);
             string text = Encoding.Unicode.GetString(tempbuffer);
-            string command = VMBRFormatHandler.GetValue(text, "command");
+            string command = JsonConvert.DeserializeObject<string>( "command");
             if(command == "dc")
             {
                 Disconnect(socket);
@@ -79,8 +80,8 @@ namespace VM_Battle_Royale
 
                     VMAndPass convert = new VMAndPass
                     {
-                        Ngrokurl = VMBRFormatHandler.GetValue(text, "ngrokurl"),
-                        Pass = VMBRFormatHandler.GetValue(text, "pass")
+                        Ngrokurl = JsonConvert.DeserializeObject<string>( "ngrokurl"),
+                        Pass = JsonConvert.DeserializeObject<string>( "pass")
                     };
                     Task.Run(() => CheckIfDisconnected(socket));
                     vmandpass.Add(end.Address, convert);
@@ -94,7 +95,7 @@ namespace VM_Battle_Royale
                         if (check.Disconnected == true)
                         {
                             vmandpass[end.Address].Disconnected = false;
-                            check.Ngrokurl = VMBRFormatHandler.GetValue(text, "ngrokurl");
+                            check.Ngrokurl = JsonConvert.DeserializeObject<string>( "ngrokurl");
                         }
                         else if (check.Eliminated == true)
                         {
@@ -124,7 +125,7 @@ namespace VM_Battle_Royale
                                     Dictionary<string, string> dict = new Dictionary<string, string>();
                                     dict.Add("command", "message");
                                     dict.Add("response", "You have won VMBR! Congratulations!");    
-                                    kvp2.Value.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat("response", "You have won VMBR! Congratulations!")));
+                                    kvp2.Value.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                                 }
                             }
                         }
@@ -135,7 +136,7 @@ namespace VM_Battle_Royale
 
             if(command == "username")
             {
-                 string username = VMBRFormatHandler.GetValue(text, "playername");
+                 string username = JsonConvert.DeserializeObject<string>( "playername");
                 IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
                 foreach (string v in usernames.Keys.ToList())
                 {
@@ -150,7 +151,7 @@ namespace VM_Battle_Royale
                             string response = "Username set to " + username + "!";
                             vmbrconvert.Add("command", command);
                             vmbrconvert.Add("response", response);
-                            string convertedvmbr = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
+                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
                         }
                         else if (v == username)
@@ -158,7 +159,7 @@ namespace VM_Battle_Royale
                             Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                             vmbrconvert.Add("command", command);
                             vmbrconvert.Add("response", "Sorry! That username already exists!");
-                            string convertedvmbr = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
+                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
                         }
                         else
@@ -167,7 +168,7 @@ namespace VM_Battle_Royale
                             Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                             vmbrconvert.Add("command", command);
                             vmbrconvert.Add("response", "Username set to " + username + "!");
-                            string convertedvmbr = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
+                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
                         }
                     }
@@ -178,7 +179,7 @@ namespace VM_Battle_Royale
                     Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                     vmbrconvert.Add("command", command);
                     vmbrconvert.Add("response", "Username set to " + username + "!");
-                    string convertedvmbr = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
+                    string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                     socket.Send(Encoding.ASCII.GetBytes(convertedvmbr));
                 }
             }
@@ -195,7 +196,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
                         dict.Add("gamestate", "graceperiod");
-                        socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+                        socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                 } else
                 {
@@ -215,7 +216,7 @@ namespace VM_Battle_Royale
                         dict.Add("response", "Failed to start the game. Reason: You are not the host of this game!");
                     }
                     
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
             }
 
@@ -232,7 +233,7 @@ namespace VM_Battle_Royale
                     i++;
                 }
                 vmbrconvert.Add("amountofips", (vmbrconvert.Count - 1).ToString());
-                string convertedvmbr = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
+                string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                 try
                 {
                     socket.Send(Encoding.ASCII.GetBytes(convertedvmbr));
@@ -257,7 +258,7 @@ namespace VM_Battle_Royale
                         dict.Add("username" + i, v.Key);
                         i++;
                     }
-                    string vmbr = VMBRFormatHandler.CreateVMBRFormat(dict);
+                    string vmbr = JsonConvert.SerializeObject(dict);
                     socket.Send(Encoding.ASCII.GetBytes(vmbr));
                 }
                 else if (gameState == "GRACE")
@@ -265,21 +266,21 @@ namespace VM_Battle_Royale
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: Cannot hack at the momment. Reason: The 1 minute grace period is still on...WHAT ARE YOU EVEN DOING. PROTECT YOUR VM!");
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
                 else if (gameState == "START")
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: The game hasn't even started yet.");
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
                 else if (gameState == "END")
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: The game is over.");
-                    socket.Send(Encoding.ASCII.GetBytes(VMBRFormatHandler.CreateVMBRFormat(dict)));
+                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
 
                 }
 
@@ -292,8 +293,8 @@ namespace VM_Battle_Royale
                     Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                     vmbrconvert.Add("command", "hackperson");
                     vmbrconvert.Add("response", "You got hacked!");
-                    string hackperson = VMBRFormatHandler.GetValue(text, "persontobehacked");
-                    string responsesend = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert);
+                    string hackperson = JsonConvert.DeserializeObject<string>( "persontobehacked");
+                    string responsesend = JsonConvert.SerializeObject(vmbrconvert);
                     Socket sockettohack;
                     usernames.TryGetValue(hackperson, out sockettohack);
                     sockettohack.Send(Encoding.ASCII.GetBytes(responsesend));
@@ -306,7 +307,7 @@ namespace VM_Battle_Royale
                     vmandpass.TryGetValue(end.Address, out convert);
                     vmbrconvert2.Add("pass", convert.Pass);
                     vmbrconvert2.Add("ip", convert.Ngrokurl);
-                    string responsesend2 = VMBRFormatHandler.CreateVMBRFormat(vmbrconvert2);
+                    string responsesend2 = JsonConvert.SerializeObject(vmbrconvert2);
                     socket.Send(Encoding.ASCII.GetBytes(responsesend2));
                 } 
                 
