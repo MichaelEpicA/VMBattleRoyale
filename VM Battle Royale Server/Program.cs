@@ -163,6 +163,7 @@ namespace VM_Battle_Royale
                             vmbrconvert.Add("response", response);
                             string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                            break;
                         }
                         else if (v == username)
                         {
@@ -171,6 +172,7 @@ namespace VM_Battle_Royale
                             vmbrconvert.Add("response", "Sorry! That username already exists!");
                             string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                            break;
                         }
                         else
                         {
@@ -180,6 +182,7 @@ namespace VM_Battle_Royale
                             vmbrconvert.Add("response", "Username set to " + username + "!");
                             string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                            break;
                         }
                     }
                 }
