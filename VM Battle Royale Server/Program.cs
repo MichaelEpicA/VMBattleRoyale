@@ -26,7 +26,7 @@ namespace VM_Battle_Royale
 
         static void SetupServer()
         {
-                Console.Write("Setting up test VMBR server...");
+             Console.Write("Setting up test VMBR server...");
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
             _serversocket.Listen(5);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
@@ -63,10 +63,19 @@ namespace VM_Battle_Royale
             } catch(SocketException)
             {
                 Disconnect(socket);
+                return;
             }
             byte[] tempbuffer = new byte[recieved];
             Array.Copy(_buffer, tempbuffer, recieved);
             string text = Encoding.Unicode.GetString(tempbuffer);
+            if(text == "")
+            {
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                dict.Add("command", "message");
+                dict.Add("response", "Invalid command.");
+                socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                return;
+            }
             string command = JObject.Parse(text)["command"].ToString();
             if(command == "dc")
             {
@@ -81,8 +90,8 @@ namespace VM_Battle_Royale
 
                     VMAndPass convert = new VMAndPass
                     {
-                        Ngrokurl = JObject.Parse(text).Value<string>( "ngrokurl"),
-                        Pass = JObject.Parse(text).Value<string>( "pass")
+                        Ngrokurl = JObject.Parse(text)["ngrokurl"].ToString(),
+                        Pass = JObject.Parse(text)["pass"].ToString()
                     };
                     Task.Run(() => CheckIfDisconnected(socket));
                     vmandpass.Add(end.Address, convert);
@@ -126,7 +135,7 @@ namespace VM_Battle_Royale
                                     Dictionary<string, string> dict = new Dictionary<string, string>();
                                     dict.Add("command", "message");
                                     dict.Add("response", "You have won VMBR! Congratulations!");    
-                                    kvp2.Value.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
+                                    kvp2.Value.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
                                 }
                             }
                         }
