@@ -26,7 +26,7 @@ namespace VM_Battle_Royale
 
         static void SetupServer()
         {
-             Console.Write("Setting up test VMBR server...");
+                Console.Write("Setting up test VMBR server...");
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
             _serversocket.Listen(5);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
@@ -144,49 +144,12 @@ namespace VM_Battle_Royale
                 }
             }
 
-            if(command == "username")
+            if (command == "username")
             {
                 string username = JObject.Parse(text)["playername"].ToString();
                 IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
-                foreach (string v in usernames.Keys.ToList())
-                {
-                    foreach(Socket s in usernames.Values.ToList())
-                    {
-                        IPEndPoint tableip = (IPEndPoint)s.RemoteEndPoint;
-                        if (tableip.Address == ip.Address)
-                        {
-                            usernames.Remove(v);
-                            usernames.Add(username, socket);
-                            Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
-                            string response = "Username set to " + username + "!";
-                            vmbrconvert.Add("command", command);
-                            vmbrconvert.Add("response", response);
-                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
-                            socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
-                            break;
-                        }
-                        else if (v == username)
-                        {
-                            Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
-                            vmbrconvert.Add("command", command);
-                            vmbrconvert.Add("response", "Sorry! That username already exists!");
-                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
-                            socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
-                            break;
-                        }
-                        else
-                        {
-                            usernames.Add(username, socket);
-                            Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
-                            vmbrconvert.Add("command", command);
-                            vmbrconvert.Add("response", "Username set to " + username + "!");
-                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
-                            socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
-                            break;
-                        }
-                    }
-                }
-                if(usernames.Count == 0)
+                IPEndPoint tableip = (IPEndPoint)usernames[username].RemoteEndPoint;
+                if (usernames.Count == 0)
                 {
                     usernames.Add(username, socket);
                     Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
@@ -195,7 +158,27 @@ namespace VM_Battle_Royale
                     string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                     socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
                 }
+
+
+                if (tableip.Address == ip.Address)
+                {
+                    usernames.Remove(username);
+                    usernames.Add(username, socket);
+                    Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
+                    string response = "Username set to " + username + "!";
+                    vmbrconvert.Add("command", command);
+                    vmbrconvert.Add("response", response);
+                    string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
+                    socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                }
+                if(usernames.ContainsKey(username)) {  Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
+                    vmbrconvert.Add("command", command);
+                    vmbrconvert.Add("response", "Sorry! That username already exists!");
+                    string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
+                    socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));}
             }
+              
+                
 
 
             
@@ -412,3 +395,4 @@ namespace VM_Battle_Royale
         public bool Disconnected { get; set; }
     }
 }
+
