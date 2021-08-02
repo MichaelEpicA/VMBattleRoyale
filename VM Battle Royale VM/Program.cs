@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Diagnostics;
+using System.Web.Security;
 
 namespace VM_Battle_Royale
 {
@@ -14,7 +15,8 @@ namespace VM_Battle_Royale
                 Console.WriteLine("RealVNC already installed!");
                 SetupPassword();
             }
-            else {
+            else
+            {
                 Console.WriteLine("Downloading RealVNC Server...");
                 WebClient client = new WebClient();
                 client.DownloadFile("https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.7.4-Windows.exe", "vncserverinstall.exe");
@@ -26,7 +28,8 @@ namespace VM_Battle_Royale
                     Console.Read();
                     Environment.Exit(-1);
                 }
-                else {
+                else
+                {
                     SetupPassword();
                     File.Delete("vncserverinstall.exe");
 
@@ -34,10 +37,11 @@ namespace VM_Battle_Royale
 
 
             }
-            if(File.Exists("C:\\Program Files\\VM Battle Royale\\ngrok.exe"))
+            if (File.Exists("C:\\Program Files\\VM Battle Royale\\ngrok.exe"))
             {
                 Console.WriteLine("ngrok is already present!");
-            } else
+            }
+            else
             {
                 Directory.CreateDirectory("C:\\Program Files\\VM Battle Royale");
                 WebClient client = new WebClient();
@@ -58,10 +62,11 @@ namespace VM_Battle_Royale
 
         }
 
-        static void SetupPassword() {
-             string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
-            Console.WriteLine("What would you like your password to be?");
-            string input = Console.ReadLine();
+        static void SetupPassword()
+        {
+            string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
+            // Console.WriteLine("What would you like your password to be?");
+            string input = Membership.GeneratePassword(10, 2); //Console.ReadLine();
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 FileName = "cmd",
