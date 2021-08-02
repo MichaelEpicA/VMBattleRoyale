@@ -475,6 +475,7 @@ namespace VM_Battle_Royale
                         e.Disconnected = true;
                         vmandpass.Add(end.Address, e);
                     }
+                    //2 minutes is the timeout, and then it checks if they were eliminated.
                     Thread.Sleep(120000);
                     CheckIfEliminated(socket);
                 }

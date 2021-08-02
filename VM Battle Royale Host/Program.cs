@@ -15,7 +15,8 @@ namespace VM_Battle_Royale
         private static string[] easywords = { "remove", "load", "signal", "right", "part", "url", "event", "stat", "call", "anon", "init", "dir", "add", "cookies", "handle", "ping", "ghost", "count", "loop", "temp", "status", "xml", "num", "bytes", "join", "intel", "reset", "info", "global", "size", "port", "get", "http", "emit", "delete", "buffer", "root", "file", "write", "socket", "bit", "key", "pass", "host", "val", "send", "list", "poly", "data", "log", "user", "upload", "set", "system", "com", "type", "add", "net", "client", "domain", "left", "point" };
         private static List<string> usernames = new List<string>();
         public static int asyncrec = new int();
-        public static string gameState = "START";
+        enum GameState { Start, Play, End, Grace };
+        static GameState gameState = GameState.Start;
         static bool waiting;
         static void Main(string[] args)
         {
@@ -73,15 +74,15 @@ namespace VM_Battle_Royale
                     //Basic checking, don't worry the server will also check as well.
                     else if (input == "hack")
                     {
-                        if (gameState == "PLAY")
+                        if (gameState == GameState.Play)
                         {
                             HackFunction();
                         }
-                        else if (gameState == "GRACE")
+                        else if (gameState == GameState.Grace)
                         {
                             Console.WriteLine("ERROR: Unable to hack at this time. Reason: The grace period is still on.");
                         }
-                        else if (gameState == "START")
+                        else if (gameState == GameState.Start)
                         {
                             Console.WriteLine("ERROR: Unable to hack at this time. Reason: The game hasn't started yet.");
                         }
@@ -202,7 +203,16 @@ namespace VM_Battle_Royale
             else if (value == "gamestatechange")
             {
                 //Changes gamestate, for example if the game just starts, this would be called to update it here.
-                gameState = JObject.Parse(text)["gamestate"].ToString();
+                if(JObject.Parse(text)["gamestate"].ToString() == "PLAY")
+                {
+                    gameState = GameState.Play;
+                } else if(JObject.Parse(text)["gamestate"].ToString() == "GRACE")
+                {
+                    gameState = GameState.Grace;
+                } else if(JObject.Parse(text)["gamestate"].ToString() == "END")
+                {
+                    gameState = GameState.End;
+                }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             }
