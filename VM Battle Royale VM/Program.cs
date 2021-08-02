@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Diagnostics;
+using System.Web.Security;
 
 namespace VM_Battle_Royale
 {
@@ -60,8 +61,8 @@ namespace VM_Battle_Royale
 
         static void SetupPassword() {
              string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
-            Console.WriteLine("What would you like your password to be?");
-            string input = Console.ReadLine();
+            // Console.WriteLine("What would you like your password to be?");
+            string input = Membership.GeneratePassword(10,2); //Console.ReadLine();
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 FileName = "cmd",
