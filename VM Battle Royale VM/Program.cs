@@ -52,7 +52,7 @@ namespace VM_Battle_Royale
                 Arguments = "authtoken " + ngrauthtoken
             };
             Process.Start(start);
-            Console.WriteLine("Your ready to go!");
+            Console.WriteLine("You're ready to go!");
             Console.ReadLine();
 
 
