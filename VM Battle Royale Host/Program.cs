@@ -235,12 +235,12 @@ namespace VM_Battle_Royale
                 string input = Console.ReadLine();
                 if(input == wordchosen)
                 {
-				   i += 10;
+                   i += 10;
                    Console.WriteLine("Hacking progress: " + i + "%");
                 } else
-				{
-				   Console.WriteLine("Incorrect! " + input + "does not equal " + wordchosen + "!");
-				}
+                {
+                  Console.WriteLine("Incorrect! " + input + "does not equal " + wordchosen + "!");
+                }
             }
 
         }
