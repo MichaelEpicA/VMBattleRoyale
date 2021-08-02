@@ -76,7 +76,14 @@ namespace VM_Battle_Royale
                 socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
                 return;
             }
-            string command = JObject.Parse(text)["command"].ToString();
+            string command = "";
+            try
+            {
+                command = JObject.Parse(text)["command"].ToString();
+            } catch
+            {
+                socket.Send(Encoding.ASCII.GetBytes("Invalid Command"));
+            }
             if(command == "dc")
             {
                 Disconnect(socket);
