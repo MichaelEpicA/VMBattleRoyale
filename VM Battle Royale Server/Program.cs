@@ -49,6 +49,7 @@ namespace VM_Battle_Royale
             {
                 socket.Disconnect(false);
                 _clientSockets.Remove(socket);
+                
             }
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
 
