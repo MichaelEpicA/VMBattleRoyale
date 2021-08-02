@@ -166,28 +166,6 @@ namespace VM_Battle_Royale
 
 
                 }
-                else
-                {
-                    //Win condition for when the player destroys all other vms.
-                    foreach (KeyValuePair<IPAddress, VMAndPass> kvp in vmandpass)
-                    {
-                        if (!kvp.Value.Eliminated)
-                        {
-                            foreach (KeyValuePair<string, Socket> kvp2 in usernames)
-                            {
-                                IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
-                                if (end.Address == kvp.Key)
-                                {
-                                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                                    dict.Add("command", "message");
-                                    dict.Add("response", "You have won VMBR! Congratulations!");
-                                    kvp2.Value.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-                                }
-                            }
-                        }
-
-                    }
-                }
             }
 
             if (command == "username")
@@ -495,6 +473,25 @@ namespace VM_Battle_Royale
                     if (end2.Address == end.Address)
                     {
                         kvp.Value.Send(Encoding.ASCII.GetBytes("RIP! " + kvp.Key + "has been eliminated from VMBR!"));
+                        //Win condition for when the player destroys all other vms.
+                        foreach (KeyValuePair<IPAddress, VMAndPass> kvp2 in vmandpass)
+                        {
+                            if (!kvp2.Value.Eliminated)
+                            {
+                                foreach (KeyValuePair<string, Socket> kvp3 in usernames)
+                                {
+                                    IPEndPoint end3 = (IPEndPoint)socket.RemoteEndPoint;
+                                    if (end3.Address == kvp2.Key)
+                                    {
+                                        Dictionary<string, string> dict = new Dictionary<string, string>();
+                                        dict.Add("command", "message");
+                                        dict.Add("response", "You have won VMBR! Congratulations!");
+                                        kvp3.Value.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                                    }
+                                }
+                            }
+
+                        }
                     }
 
                 }

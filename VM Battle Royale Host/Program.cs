@@ -17,7 +17,6 @@ namespace VM_Battle_Royale
         public static int asyncrec = new int();
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
-        static bool waiting;
         static void Main(string[] args)
         {
             LoopConnect();
