@@ -81,7 +81,7 @@ namespace VM_Battle_Royale
         {
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@";
             
-            for (var i = 0, i<length, i++)
+            for (var i = 0, i < length, i++)
             {
                 var random = new Random.Next(0,chars.Length);
                 RandomString = RandomString + chars[random]
