@@ -62,9 +62,9 @@ namespace VM_Battle_Royale
             string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
             Console.WriteLine("Set your vnc password. (Other players will see this!) Leave black to randomly generate one.");
             string password = Console.ReadLine();
-            if (!password)
+            if (password != "")
             {
-                string password = RandomString();
+                password = RandomString();
             }
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
@@ -76,18 +76,22 @@ namespace VM_Battle_Royale
             Process.Start(processStartInfo).WaitForExit();
         }
 
-        // Stolen from the internet. Uses current time as seed, theoretically could cause problems.
+        // Uses current time as seed, theoretically could cause problems.
         public static string RandomString(int length = 7)
         {
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@";
-            
-            for (var i = 0, i < length, i++)
+            Random rand = new Random();
+
+            string generatedString = "";
+
+            for (int i = 0; i < length; i++)
             {
-                var random = new Random.Next(0,chars.Length);
-                RandomString = RandomString + chars[random]
+                int random = rand.Next(0, chars.Length);
+                char randomchar = chars[random];
+                generatedString = generatedString + randomchar;
             }
 
-            return randomString;
+            return generatedString;
         }
     }
 }
