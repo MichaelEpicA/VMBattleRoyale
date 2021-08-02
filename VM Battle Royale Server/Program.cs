@@ -73,14 +73,14 @@ namespace VM_Battle_Royale
                 Dictionary<string, string> dict = new Dictionary<string, string>();
                 dict.Add("command", "message");
                 dict.Add("response", "Invalid command.");
-				try
-				{
+                try
+                {
                     socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-				} catch(SocketException)
-				{
-					Disconnect(socket);
-					return;
-				}
+                } catch(SocketException)
+                {
+                    Disconnect(socket);
+                    return;
+                }
                 return;
             }
             string command = "";
