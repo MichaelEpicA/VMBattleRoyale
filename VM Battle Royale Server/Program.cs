@@ -26,13 +26,13 @@ namespace VM_Battle_Royale
 
         static void SetupServer()
         {
-                Console.Write("Setting up test VMBR server...");
+            Console.Write("Setting up VMBR server...");
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
             _serversocket.Listen(5);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
             Console.Write("Done.");
             Console.WriteLine("\nWaiting for a connection...");
-            Console.Read();
+			while(true) {}
         }
 
         private static void AcceptCallBack(IAsyncResult ar)
