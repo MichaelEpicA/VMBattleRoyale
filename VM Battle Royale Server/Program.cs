@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -51,7 +51,6 @@ namespace VM_Battle_Royale
             {
                 socket.Disconnect(false);
                 _clientSockets.Remove(socket);
-
             }
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
 
@@ -163,8 +162,6 @@ namespace VM_Battle_Royale
                         socket.Disconnect(false);
                         _clientSockets.Remove(socket);
                     }
-
-
                 }
             }
 

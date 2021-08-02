@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -104,10 +104,6 @@ namespace VM_Battle_Royale
                         Console.WriteLine("Available commands: username, hack, startgame");
                     }
                 }
-
-
-
-
             }
         }
 
@@ -122,6 +118,7 @@ namespace VM_Battle_Royale
             string text = Encoding.Unicode.GetString(tempbuffer);
             string value = JObject.Parse(text)["command"].ToString();
             string response = JObject.Parse(text)["response"].ToString();
+          
             if (value == "username")
             {   //If the username already exists, we reprompt the user.
                 if (response.Contains("exists"))
@@ -176,7 +173,6 @@ namespace VM_Battle_Royale
                 //Calls the hack interface to pull it up.
                 HackTUI();
                 _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-
             }
             else if (value == "hackperson")
             {
