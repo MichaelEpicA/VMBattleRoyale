@@ -226,7 +226,7 @@ namespace VM_Battle_Royale
 
         private static void HackTUI()
         {
-			int i = 0;
+            int i = 0;
             while(i < 100)
             {
                 Random random = new Random();
