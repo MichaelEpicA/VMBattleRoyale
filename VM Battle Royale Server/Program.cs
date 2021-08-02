@@ -17,7 +17,8 @@ namespace VM_Battle_Royale
         static Dictionary<string, Socket> usernames = new Dictionary<string, Socket>();
         static Dictionary<IPAddress, VMAndPass> vmandpass = new Dictionary<IPAddress, VMAndPass>();
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        static string gameState = "START";
+         enum GameState {Start,Play,End,Grace};
+        static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
         static void Main(string[] args)
         {
@@ -84,7 +85,7 @@ namespace VM_Battle_Royale
 
             if(command == "vm")
             {
-                if (gameState == "START")
+                if (gameState == GameState.Start)
                 {
                     IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
 
@@ -96,7 +97,7 @@ namespace VM_Battle_Royale
                     Task.Run(() => CheckIfDisconnected(socket));
                     vmandpass.Add(end.Address, convert);
                 }
-                else if (gameState == "PLAY")
+                else if (gameState == GameState.Play)
                 {
                     VMAndPass check = new VMAndPass();
                     IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
@@ -236,9 +237,9 @@ namespace VM_Battle_Royale
             
             if(command == "startgame")
             {
-                if(usernames.Count == vmandpass.Count && usernames.Count > 2 && gameState == "START" && usernames.ElementAt(0).Value == socket)
+                if(usernames.Count == vmandpass.Count && usernames.Count > 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
                 {
-                    gameState = "GRACE";
+                    gameState = GameState.Grace;
                     foreach (KeyValuePair<string,Socket> kvp in usernames)
                     {
                         Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -256,7 +257,7 @@ namespace VM_Battle_Royale
                     } else if(usernames.Count != vmandpass.Count)
                     {
                         dict.Add("response", "Failed to start the game. Reason: There aren't the same amount of VMS connected as interfaces. \n This means that some vm(s) or interface(s) have not been connected to the server.");
-                    } else if(gameState != "START")
+                    } else if(gameState != GameState.Start)
                     {
                         dict.Add("response", "Failed to start the game. Reason: The game has either already started or ended.");
                     } else if(usernames.ElementAt(0).Value != socket)
@@ -294,7 +295,7 @@ namespace VM_Battle_Royale
             
             if(command == "showusernames")
             {
-                if(gameState == "PLAY")
+                if(gameState == GameState.Play)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "hackshowuser");
@@ -309,21 +310,21 @@ namespace VM_Battle_Royale
                     string vmbr = JsonConvert.SerializeObject(dict);
                     socket.Send(Encoding.ASCII.GetBytes(vmbr));
                 }
-                else if (gameState == "GRACE")
+                else if (gameState == GameState.Grace)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: Cannot hack at the momment. Reason: The 1 minute grace period is still on...WHAT ARE YOU EVEN DOING. PROTECT YOUR VM!");
                     socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
-                else if (gameState == "START")
+                else if (gameState == GameState.Start)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: The game hasn't even started yet.");
                     socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
-                else if (gameState == "END")
+                else if (gameState == GameState.End)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
@@ -336,7 +337,7 @@ namespace VM_Battle_Royale
 
             if(command == "hackperson")
             {
-                if(gameState == "PLAY")
+                if(gameState == GameState.Play)
                 {
                     Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                     vmbrconvert.Add("command", "hackperson");
