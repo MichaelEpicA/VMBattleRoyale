@@ -226,7 +226,8 @@ namespace VM_Battle_Royale
 
         private static void HackTUI()
         {
-            for(int i = 0; i <= 100; i += 10)
+			int i = 0;
+            while(i < 100)
             {
                 Random random = new Random();
                 string wordchosen = easywords[random.Next(0, easywords.Length - 1)];
@@ -234,8 +235,12 @@ namespace VM_Battle_Royale
                 string input = Console.ReadLine();
                 if(input == wordchosen)
                 {
+				   i += 10;
                    Console.WriteLine("Hacking progress: " + i + "%");
-                }
+                } else
+				{
+				   Console.WriteLine("Incorrect! " + input + "does not equal " + wordchosen + "!");
+				}
             }
 
         }
