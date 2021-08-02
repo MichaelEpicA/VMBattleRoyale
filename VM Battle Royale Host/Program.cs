@@ -66,14 +66,7 @@ namespace VM_Battle_Royale
                     string input = Console.ReadLine();
                     if (input == "username")
                     {
-                        Console.WriteLine("What username would you like to use?");
-                        string username = Console.ReadLine();
-                        Dictionary<string, string> dict = new Dictionary<string, string>();
-                        dict.Add("command", input);
-                        dict.Add("playername", username);
-                        string vmbrusername = JsonConvert.SerializeObject(dict);
-                        _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
-                        asyncrec = 1;
+                        UsernameFunction("username");
                     }
 
                     else if (input == "hack")
@@ -129,7 +122,13 @@ namespace VM_Battle_Royale
             string response = JObject.Parse(text)["response"].ToString();
             if (value == "username")
             {   
-                Console.WriteLine(response);
+                if(response.Contains("exists"))
+                {
+                    UsernameFunction("username");
+                } else
+                {
+                    Console.WriteLine(response);
+                }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "showips")
@@ -243,6 +242,18 @@ namespace VM_Battle_Royale
                 }
             }
 
+        }
+
+        private static void UsernameFunction(string input)
+        {
+            Console.WriteLine("What username would you like to use?");
+            string username = Console.ReadLine();
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", input);
+            dict.Add("playername", username);
+            string vmbrusername = JsonConvert.SerializeObject(dict);
+            _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
+            asyncrec = 1;
         }
     }
 }
