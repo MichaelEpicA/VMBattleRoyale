@@ -14,8 +14,7 @@ namespace VM_Battle_Royale
                 Console.WriteLine("RealVNC already installed!");
                 SetupPassword();
             }
-            else
-            {
+            else {
                 Console.WriteLine("Downloading RealVNC Server...");
                 WebClient client = new WebClient();
                 client.DownloadFile("https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.7.4-Windows.exe", "vncserverinstall.exe");
@@ -27,8 +26,7 @@ namespace VM_Battle_Royale
                     Console.Read();
                     Environment.Exit(-1);
                 }
-                else
-                {
+                else {
                     SetupPassword();
                     File.Delete("vncserverinstall.exe");
 
@@ -36,11 +34,10 @@ namespace VM_Battle_Royale
 
 
             }
-            if (File.Exists("C:\\Program Files\\VM Battle Royale\\ngrok.exe"))
+            if(File.Exists("C:\\Program Files\\VM Battle Royale\\ngrok.exe"))
             {
                 Console.WriteLine("ngrok is already present!");
-            }
-            else
+            } else
             {
                 Directory.CreateDirectory("C:\\Program Files\\VM Battle Royale");
                 WebClient client = new WebClient();
@@ -53,7 +50,7 @@ namespace VM_Battle_Royale
             {
                 FileName = "C:\\Program Files\\VM Battle Royale\\ngrok.exe",
                 Arguments = "authtoken " + ngrauthtoken
-            };
+            };  
             Process.Start(start);
             Console.WriteLine("You're ready to go!");
             Console.ReadLine();
@@ -61,19 +58,40 @@ namespace VM_Battle_Royale
 
         }
 
-        static void SetupPassword()
-        {
+        static void SetupPassword() {
             string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
-            // Console.WriteLine("What would you like your password to be?");
-            string input = Membership.GeneratePassword(10, 2); //Console.ReadLine();
+            Console.WriteLine("Set your vnc password. (Other players will see this!) Leave black to randomly generate one.");
+            string password = Console.ReadLine();
+            if (password != "")
+            {
+                password = RandomString();
+            }
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 FileName = "cmd",
-                Arguments = @"/c echo """ + input + @""" | " + vncserver + " -weakpwd -type AdminPassword -service",
+                Arguments = @"/c echo """ + password + @""" | " + vncserver + " -weakpwd -type AdminPassword -service",
                 Verb = "runas"
             };
-            File.WriteAllText("vncpasssetup.txt", input);
+            File.WriteAllText("vncpasssetup.txt", password);
             Process.Start(processStartInfo).WaitForExit();
+        }
+
+        // Uses current time as seed, theoretically could cause problems.
+        public static string RandomString(int length = 7)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@";
+            Random rand = new Random();
+
+            string generatedString = "";
+
+            for (int i = 0; i < length; i++)
+            {
+                int random = rand.Next(0, chars.Length);
+                char randomchar = chars[random];
+                generatedString = generatedString + randomchar;
+            }
+
+            return generatedString;
         }
     }
 }
