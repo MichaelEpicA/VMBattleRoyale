@@ -27,13 +27,13 @@ namespace VM_Battle_Royale
 
         static void SetupServer()
         {
-                Console.Write("Setting up test VMBR server...");
+            Console.Write("Setting up VMBR server...");
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
             _serversocket.Listen(5);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
             Console.Write("Done.");
             Console.WriteLine("\nWaiting for a connection...");
-            Console.Read();
+			while(true) {}
         }
 
         private static void AcceptCallBack(IAsyncResult ar)
@@ -74,10 +74,24 @@ namespace VM_Battle_Royale
                 Dictionary<string, string> dict = new Dictionary<string, string>();
                 dict.Add("command", "message");
                 dict.Add("response", "Invalid command.");
-                socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                try
+                {
+                    socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                } catch(SocketException)
+                {
+                    Disconnect(socket);
+                    return;
+                }
                 return;
             }
-            string command = JObject.Parse(text)["command"].ToString();
+            string command = "";
+            try
+            {
+                command = JObject.Parse(text)["command"].ToString();
+            } catch(JsonReaderException)
+            {
+
+            }
             if(command == "dc")
             {
                 Disconnect(socket);
