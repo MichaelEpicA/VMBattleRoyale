@@ -4,7 +4,7 @@ an idea guest1352 (funy monkey) came up with. michaelepica and supermyl are work
 
 ## Download
 ### Stable Build
-[Github Releases Page](https://github.com/MichaelEpicA/VMBattleRoyale/releases)
+[Github Releases](https://github.com/MichaelEpicA/VMBattleRoyale/releases)
 ### Development Build
 [Github Actions](https://github.com/MichaelEpicA/VMBattleRoyale/actions)
 ## How to Build
