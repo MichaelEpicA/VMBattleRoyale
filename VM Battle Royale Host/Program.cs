@@ -57,9 +57,11 @@ namespace VM_Battle_Royale
 
         private static void SendLoop()
         {
+            //Get the recieve function ready.
             _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             while (true)
             {
+                //Checks if the host is in progress of recieving something. If it is, wait until that is done, else continue on.
                 if (asyncrec == 0)
                 {
                     Console.WriteLine("Enter a request.");
@@ -68,7 +70,7 @@ namespace VM_Battle_Royale
                     {
                         UsernameFunction("username");
                     }
-
+                    //Basic checking, don't worry the server will also check as well.
                     else if (input == "hack")
                     {
                         if(gameState == "PLAY")
@@ -99,10 +101,6 @@ namespace VM_Battle_Royale
                         Console.WriteLine("Available commands: username, hack, startgame");
                     }
                 }
-                else
-                {
-
-                }
                 
 
 
@@ -112,6 +110,7 @@ namespace VM_Battle_Royale
 
         private static void RecieveCallBack(IAsyncResult ar)
         {
+            //Sets the number to 1 to show that it is progress of recieving something.
             asyncrec = 1;
             Socket socket = (Socket)ar.AsyncState;
                 asyncrec = socket.EndReceive(ar);
@@ -121,18 +120,21 @@ namespace VM_Battle_Royale
             string value = JObject.Parse(text)["command"].ToString();
             string response = JObject.Parse(text)["response"].ToString();
             if (value == "username")
-            {   
+            {   //If the username already exists, we reprompt the user.
                 if(response.Contains("exists"))
                 {
                     UsernameFunction("username");
                 } else
                 {
+                    //If it doesn't already exist, we just write what the server told us to write.
                     Console.WriteLine(response);
                 }
+                //Sets the variable to 0, to show that the host is done recieving something.
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "showips")
             {
+                //Not used a lot, used for showing ips of the host users. (DEBUG)
                 string numberofips = JObject.Parse(text)["amountofips"].ToString();
                 for(int i = 0; i <= Int32.Parse(numberofips); i++)
                 {
@@ -147,6 +149,7 @@ namespace VM_Battle_Royale
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackshowuser")
             {
+                //Used for showing users that are hackable.
                 string vmbrnumbers = JObject.Parse(text)["amountofusers"].ToString();
                 for (int i = 0; i <= Int32.Parse(vmbrnumbers); i++)
                 {
@@ -156,31 +159,39 @@ namespace VM_Battle_Royale
                     }
                     string vmbrusername = JObject.Parse(text)["username" + 1].ToString();
                     Console.WriteLine("Username: " + vmbrusername);
+                    //Adds the usernames to a temporary list, mainly just used to check if the username actually exists in the WhoToHack function.
                     usernames.Add(vmbrusername);
                 }
                 string exists = WhoToHack();
+                //This is how we build JSON, mainly because this is how the VMBR formatter worked.
                 Dictionary<string, string> dict = new Dictionary<string, string>();
                 dict.Add("command", "hackperson");
                 dict.Add("persontobehacked", exists);
+                //Calls the hack interface to pull it up.
                 HackTUI();
                 _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+
             } else if(value == "hackperson")
             {
+                //This is used when the user got hacked, and alerts them.
                 Console.WriteLine(response);
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "hackedperson")
             {
+                //When the user successfully hacks somebody, it sends back ip and pass, so here, we just display that info.
                 Console.WriteLine("Hacked " + JObject.Parse(text)["username"] + "!");
                 Console.WriteLine("IP Address for " + JObject.Parse(text)["username"] + ": " + JObject.Parse(text)["ip"]);
                 Console.WriteLine("Password for " + JObject.Parse(text)["username"]+ ": " + JObject.Parse(text)["pass"]);
             } else if(value == "message")
             {
+                //Used if I just wanna send a message to clients for some reason.
                 Console.WriteLine(JObject.Parse(text)["response"]);
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             } else if(value == "gamestatechange")
             {
+                //Changes gamestate, for example if the game just starts, this would be called to update it here.
                 gameState = JObject.Parse(text)["gamestate"].ToString();
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
@@ -189,6 +200,7 @@ namespace VM_Battle_Royale
 
         private static void HackFunction()
         {
+            //Says that it's listing usernames, and then sends a request to get those usernames.
             Console.WriteLine("Listing usernames....");
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "showusername");
@@ -199,6 +211,7 @@ namespace VM_Battle_Royale
 
         private static string WhoToHack()
         {
+            //This function gets called when the usernames are recieved, it just asks who would you like to hack, reprompting is a bit broken though.
             Console.WriteLine("Who would you like to hack?");
             string hackperson = Console.ReadLine();
             foreach (string s in usernames)
@@ -213,18 +226,9 @@ namespace VM_Battle_Royale
             return hackperson;
         }
 
-        private static byte[] Recieve()
-        { 
-            int rec = new int();
-            byte[] tempbuffer = new byte[1024];
-            rec = _clientSocket.Receive(tempbuffer);
-            byte[] data = new byte[rec];
-            Array.Copy(tempbuffer, data, rec);
-            return data;
-        }
-
         private static void HackTUI()
         {
+            // The "interface" of the hacking, allows for really easy edits to the TUI.
             int i = 0;
             while(i < 100)
             {
@@ -246,6 +250,7 @@ namespace VM_Battle_Royale
 
         private static void UsernameFunction(string input)
         {
+            //Sends the username to the server, and this was made a function just for reprompting.
             Console.WriteLine("What username would you like to use?");
             string username = Console.ReadLine();
             Dictionary<string, string> dict = new Dictionary<string, string>();

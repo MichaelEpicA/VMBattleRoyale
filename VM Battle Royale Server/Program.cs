@@ -38,6 +38,7 @@ namespace VM_Battle_Royale
 
         private static void AcceptCallBack(IAsyncResult ar)
          {
+            //How the server handles when a client connects.
             Socket socket = _serversocket.EndAccept(ar);
             Console.WriteLine("New client connected!");
             Console.WriteLine(_clientSockets.Count);
@@ -57,6 +58,7 @@ namespace VM_Battle_Royale
 
         private static void RecieveCallBack(IAsyncResult ar)
        {
+            //How the server recieves things.
             int recieved = new int();
             Socket socket = (Socket)ar.AsyncState;
             try 
@@ -70,6 +72,7 @@ namespace VM_Battle_Royale
             byte[] tempbuffer = new byte[recieved];
             Array.Copy(_buffer, tempbuffer, recieved);
             string text = Encoding.Unicode.GetString(tempbuffer);
+            //Checks to see if you legit just sent nothing to the server.
             if(text == "")
             {
                 Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -100,15 +103,18 @@ namespace VM_Battle_Royale
 
             if(command == "vm")
             {
+                //This is sent when the vm monitor starts up.
                 if (gameState == GameState.Start)
                 {
                     IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
 
                     VMAndPass convert = new VMAndPass
                     {
+                        //Adding the ngrokurl and pass the client sends us into a class.
                         Ngrokurl = JObject.Parse(text)["ngrokurl"].ToString(),
                         Pass = JObject.Parse(text)["pass"].ToString()
                     };
+                    //Check if the client disconnected. (please someone make this better holy crap)
                     Task.Run(() => CheckIfDisconnected(socket));
                     vmandpass.Add(end.Address, convert);
                 }
@@ -120,11 +126,13 @@ namespace VM_Battle_Royale
                     {
                         if (check.Disconnected == true)
                         {
+                            //Check to see if the vm already existed at one point. If it did, allow it to reconnect.
                             vmandpass[end.Address].Disconnected = false;
                             vmandpass[end.Address].Ngrokurl = JObject.Parse(text)["ngrokurl"].ToString();
                         }
                         else if (check.Eliminated == true)
                         {
+                            //If the vm failed to reconnect with in the time limit instead they will be eliminated.
                             try
                             {
                                 socket.Send(Encoding.ASCII.GetBytes("ERROR: You've been eliminated from this game. Please wait until the game ends to rejoin!"));
@@ -138,6 +146,7 @@ namespace VM_Battle_Royale
                     }
                     else
                     {
+                        //If the vm never existed in the first place.
                         try
                         {
                             socket.Send(Encoding.ASCII.GetBytes("ERROR: Sorry, the game has already started. You can't join right now. Wait for the end of the game!"));
@@ -152,6 +161,7 @@ namespace VM_Battle_Royale
 
                 } else
                 {
+                    //Win condition for when the player destroys all other vms.
                     foreach(KeyValuePair<IPAddress, VMAndPass> kvp in vmandpass)
                     { if(!kvp.Value.Eliminated)
                         {
@@ -174,6 +184,7 @@ namespace VM_Battle_Royale
 
             if (command == "username")
             {
+                //Very basic username system, works by just taking the playername from the json and trying to add it to usernames.
                 string username = JObject.Parse(text)["playername"].ToString();
                 IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
                 if (usernames.Count == 0)
@@ -215,6 +226,7 @@ namespace VM_Battle_Royale
                         }
                         if (usernames.ContainsKey(username))
                         {
+                            //Username exists
                             Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                             vmbrconvert.Add("command", command);
                             vmbrconvert.Add("response", "Sorry! That username already exists!");
@@ -229,6 +241,7 @@ namespace VM_Battle_Royale
                         }
                     } else
                     {
+                        //If no hosts connected to the server and set their username, this condition will occur.
                         usernames.Add(username, socket);
                         Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                         vmbrconvert.Add("command", command);
@@ -252,6 +265,7 @@ namespace VM_Battle_Royale
             
             if(command == "startgame")
             {
+                //Starts the game, pretty obvious.
                 if(usernames.Count == vmandpass.Count && usernames.Count > 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
                 {
                     gameState = GameState.Grace;
@@ -264,6 +278,7 @@ namespace VM_Battle_Royale
                     }
                 } else
                 {
+                    //Handles different errors for when the conditions aren't met.
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     if(usernames.Count <= 2)
@@ -286,6 +301,7 @@ namespace VM_Battle_Royale
 
             if(command == "showips")
             {
+                //What the server does to show the HOST ips. Strictly for debugging.
                 Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                 vmbrconvert.Add("command", command);
                 int i = 1;
@@ -310,6 +326,7 @@ namespace VM_Battle_Royale
             
             if(command == "showusernames")
             {
+                //We use this to show the users that are hackable and then send it to the host.
                 if(gameState == GameState.Play)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -325,6 +342,7 @@ namespace VM_Battle_Royale
                     string vmbr = JsonConvert.SerializeObject(dict);
                     socket.Send(Encoding.ASCII.GetBytes(vmbr));
                 }
+                //If the grace period is up, then we call this.
                 else if (gameState == GameState.Grace)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -332,6 +350,7 @@ namespace VM_Battle_Royale
                     dict.Add("response", "ERROR: Cannot hack at the momment. Reason: The 1 minute grace period is still on...WHAT ARE YOU EVEN DOING. PROTECT YOUR VM!");
                     socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
+                //Game hasn't started yet, this is just waiting for it to start.
                 else if (gameState == GameState.Start)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -339,6 +358,7 @@ namespace VM_Battle_Royale
                     dict.Add("response", "ERROR: The game hasn't even started yet.");
                     socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
+                //Game ended.
                 else if (gameState == GameState.End)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -352,8 +372,10 @@ namespace VM_Battle_Royale
 
             if(command == "hackperson")
             {
+                //This occurs when the user successfully hacks a person.
                 if(gameState == GameState.Play)
-                {
+                { 
+                    //Creating a message for the user that got hacked.
                     Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                     vmbrconvert.Add("command", "hackperson");
                     vmbrconvert.Add("response", "You got hacked!");
@@ -361,7 +383,9 @@ namespace VM_Battle_Royale
                     string responsesend = JsonConvert.SerializeObject(vmbrconvert);
                     Socket sockettohack;
                     usernames.TryGetValue(hackperson, out sockettohack);
+                    //Sends the message.
                     sockettohack.Send(Encoding.ASCII.GetBytes(responsesend));
+                    //The rest of this just sends the important info used for hacking the user back to the client.
                     Dictionary<string, string> vmbrconvert2 = new Dictionary<string, string>();
                     vmbrconvert2.Add("command", "hackedperson");
                     vmbrconvert2.Add("username", hackperson);
@@ -376,7 +400,6 @@ namespace VM_Battle_Royale
                 } 
                 
             }
-            
             try
             {
                 
@@ -386,11 +409,13 @@ namespace VM_Battle_Royale
             }
             catch(NullReferenceException)
             {
+                //Crash protection, VERY OLD code.
                 socket.Send(Encoding.ASCII.GetBytes("Bro please fuck off"));
                 Disconnect(socket);
             }
             try
             {
+                //Try to start receiving from the client.
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecieveCallBack, socket);
             }
             catch
@@ -398,7 +423,7 @@ namespace VM_Battle_Royale
                 Disconnect(socket);
             }
         }
-
+        //Disconnect function, is used a lot, if you wanna change what the server does when a client disconnects, use this.
         public static void Disconnect(Socket socket)
         {
             foreach(KeyValuePair<string,Socket> kvp in usernames)
@@ -414,6 +439,7 @@ namespace VM_Battle_Royale
 
         public static void CheckIfDisconnected(Socket socket)
         {
+            //Pretty bad way of checking if the user is disconnected. IDK if this works.
             while(true)
             {
                 Thread.Sleep(30000);
@@ -437,6 +463,7 @@ namespace VM_Battle_Royale
 
         public static void CheckIfEliminated(Socket socket)
         {
+            //When this runs the disconnected timer has ran out, if it reconnected before this function ran, it is not eliminated.
             if(!socket.Connected)
             {
                 IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
@@ -456,6 +483,7 @@ namespace VM_Battle_Royale
 
     class VMAndPass
     {
+        //Class that I wrote, all it does is keeps values for ngrok urls, and passes and other stuff. Pretty helpful though.
         public string Ngrokurl { get; set; }
         public string Pass { get; set; }
         public bool Eliminated { get; set; }
