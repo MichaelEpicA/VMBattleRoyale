@@ -2,6 +2,11 @@
 
 an idea guest1352 (funy monkey) came up with. michaelepica and supermyl are working on this.
 
+## Download
+### Stable Build
+[Github Releases Page](https://github.com/MichaelEpicA/VMBattleRoyale/releases)
+### Development Build
+[Github Actions](https://github.com/MichaelEpicA/VMBattleRoyale/actions)
 ## How to Build
 **You will need a C# compiler**  
 ``git clone https://github.com/guest1352/VMBR``  
