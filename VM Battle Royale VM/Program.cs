@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Diagnostics;
-using System.Web.Security;
 
 namespace VM_Battle_Royale
 {
@@ -51,7 +50,7 @@ namespace VM_Battle_Royale
             {
                 FileName = "C:\\Program Files\\VM Battle Royale\\ngrok.exe",
                 Arguments = "authtoken " + ngrauthtoken
-            };
+            };  
             Process.Start(start);
             Console.WriteLine("You're ready to go!");
             Console.ReadLine();
@@ -60,17 +59,39 @@ namespace VM_Battle_Royale
         }
 
         static void SetupPassword() {
-             string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
-            // Console.WriteLine("What would you like your password to be?");
-            string input = Membership.GeneratePassword(10,2); //Console.ReadLine();
+            string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
+            Console.WriteLine("Set your vnc password. (Other players will see this!) Leave black to randomly generate one.");
+            string password = Console.ReadLine();
+            if (password != "")
+            {
+                password = RandomString();
+            }
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 FileName = "cmd",
-                Arguments = @"/c echo """ + input + @""" | " + vncserver + " -weakpwd -type AdminPassword -service",
+                Arguments = @"/c echo """ + password + @""" | " + vncserver + " -weakpwd -type AdminPassword -service",
                 Verb = "runas"
             };
-            File.WriteAllText("vncpasssetup.txt", input);
+            File.WriteAllText("vncpasssetup.txt", password);
             Process.Start(processStartInfo).WaitForExit();
+        }
+
+        // Uses current time as seed, theoretically could cause problems.
+        public static string RandomString(int length = 7)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@";
+            Random rand = new Random();
+
+            string generatedString = "";
+
+            for (int i = 0; i < length; i++)
+            {
+                int random = rand.Next(0, chars.Length);
+                char randomchar = chars[random];
+                generatedString = generatedString + randomchar;
+            }
+
+            return generatedString;
         }
     }
 }

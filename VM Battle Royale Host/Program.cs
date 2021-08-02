@@ -1,10 +1,10 @@
-﻿    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Sockets;
-    using System.Text;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace VM_Battle_Royale
 {
@@ -12,11 +12,11 @@ namespace VM_Battle_Royale
     {
         static byte[] _buffer = new byte[1024];
         private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private static string[] easywords = {"remove", "load", "signal", "right", "part", "url", "event", "stat", "call", "anon", "init", "dir", "add", "cookies", "handle", "ping", "ghost", "count", "loop", "temp","status","xml", "num", "bytes", "join", "intel", "reset", "info", "global", "size", "port", "get", "http", "emit", "delete", "buffer", "root", "file", "write", "socket", "bit", "key", "pass", "host", "val", "send", "list", "poly", "data", "log", "user", "upload", "set", "system", "com", "type", "add", "net", "client", "domain", "left", "point"};
+        private static string[] easywords = { "remove", "load", "signal", "right", "part", "url", "event", "stat", "call", "anon", "init", "dir", "add", "cookies", "handle", "ping", "ghost", "count", "loop", "temp", "status", "xml", "num", "bytes", "join", "intel", "reset", "info", "global", "size", "port", "get", "http", "emit", "delete", "buffer", "root", "file", "write", "socket", "bit", "key", "pass", "host", "val", "send", "list", "poly", "data", "log", "user", "upload", "set", "system", "com", "type", "add", "net", "client", "domain", "left", "point" };
         private static List<string> usernames = new List<string>();
         public static int asyncrec = new int();
-        public static string gameState = "START";
-        static bool waiting;
+        enum GameState { Start, Play, End, Grace };
+        static GameState gameState = GameState.Start;
         static void Main(string[] args)
         {
             LoopConnect();
@@ -45,12 +45,12 @@ namespace VM_Battle_Royale
             _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             Console.WriteLine("What username would you like to use?");
             string username = Console.ReadLine();
-             Dictionary<string, string> dict = new Dictionary<string, string>();
-             dict.Add("command", "username");
-             dict.Add("playername", username);
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "username");
+            dict.Add("playername", username);
             string vmbrusername = JsonConvert.SerializeObject(dict);
-             _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
-              asyncrec = 1;
+            _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
+            asyncrec = 1;
             SendLoop();
             Console.ReadLine();
         }
@@ -73,16 +73,19 @@ namespace VM_Battle_Royale
                     //Basic checking, don't worry the server will also check as well.
                     else if (input == "hack")
                     {
-                        if(gameState == "PLAY")
+                        if (gameState == GameState.Play)
                         {
                             HackFunction();
-                        } else if(gameState == "GRACE")
+                        }
+                        else if (gameState == GameState.Grace)
                         {
                             Console.WriteLine("ERROR: Unable to hack at this time. Reason: The grace period is still on.");
-                        } else if(gameState == "START")
+                        }
+                        else if (gameState == GameState.Start)
                         {
                             Console.WriteLine("ERROR: Unable to hack at this time. Reason: The game hasn't started yet.");
-                        } else
+                        }
+                        else
                         {
                             Console.WriteLine("ERROR: Unable to hack at this time. Reason: The game is over.");
                         }
@@ -101,10 +104,6 @@ namespace VM_Battle_Royale
                         Console.WriteLine("Available commands: username, hack, startgame");
                     }
                 }
-                
-
-
-
             }
         }
 
@@ -113,18 +112,20 @@ namespace VM_Battle_Royale
             //Sets the number to 1 to show that it is progress of recieving something.
             asyncrec = 1;
             Socket socket = (Socket)ar.AsyncState;
-                asyncrec = socket.EndReceive(ar);
+            asyncrec = socket.EndReceive(ar);
             byte[] tempbuffer = new byte[asyncrec];
             Array.Copy(_buffer, tempbuffer, asyncrec);
             string text = Encoding.Unicode.GetString(tempbuffer);
             string value = JObject.Parse(text)["command"].ToString();
             string response = JObject.Parse(text)["response"].ToString();
+          
             if (value == "username")
             {   //If the username already exists, we reprompt the user.
-                if(response.Contains("exists"))
+                if (response.Contains("exists"))
                 {
                     UsernameFunction("username");
-                } else
+                }
+                else
                 {
                     //If it doesn't already exist, we just write what the server told us to write.
                     Console.WriteLine(response);
@@ -132,11 +133,12 @@ namespace VM_Battle_Royale
                 //Sets the variable to 0, to show that the host is done recieving something.
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
-            } else if(value == "showips")
+            }
+            else if (value == "showips")
             {
                 //Not used a lot, used for showing ips of the host users. (DEBUG)
                 string numberofips = JObject.Parse(text)["amountofips"].ToString();
-                for(int i = 0; i <= Int32.Parse(numberofips); i++)
+                for (int i = 0; i <= Int32.Parse(numberofips); i++)
                 {
                     if (i == 0)
                     {
@@ -147,7 +149,8 @@ namespace VM_Battle_Royale
                 }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
-            } else if(value == "hackshowuser")
+            }
+            else if (value == "hackshowuser")
             {
                 //Used for showing users that are hackable.
                 string vmbrnumbers = JObject.Parse(text)["amountofusers"].ToString();
@@ -170,29 +173,41 @@ namespace VM_Battle_Royale
                 //Calls the hack interface to pull it up.
                 HackTUI();
                 _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-
-            } else if(value == "hackperson")
+            }
+            else if (value == "hackperson")
             {
                 //This is used when the user got hacked, and alerts them.
                 Console.WriteLine(response);
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
-            } else if(value == "hackedperson")
+            }
+            else if (value == "hackedperson")
             {
                 //When the user successfully hacks somebody, it sends back ip and pass, so here, we just display that info.
                 Console.WriteLine("Hacked " + JObject.Parse(text)["username"] + "!");
                 Console.WriteLine("IP Address for " + JObject.Parse(text)["username"] + ": " + JObject.Parse(text)["ip"]);
-                Console.WriteLine("Password for " + JObject.Parse(text)["username"]+ ": " + JObject.Parse(text)["pass"]);
-            } else if(value == "message")
+                Console.WriteLine("Password for " + JObject.Parse(text)["username"] + ": " + JObject.Parse(text)["pass"]);
+            }
+            else if (value == "message")
             {
                 //Used if I just wanna send a message to clients for some reason.
                 Console.WriteLine(JObject.Parse(text)["response"]);
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
-            } else if(value == "gamestatechange")
+            }
+            else if (value == "gamestatechange")
             {
                 //Changes gamestate, for example if the game just starts, this would be called to update it here.
-                gameState = JObject.Parse(text)["gamestate"].ToString();
+                if(JObject.Parse(text)["gamestate"].ToString() == "PLAY")
+                {
+                    gameState = GameState.Play;
+                } else if(JObject.Parse(text)["gamestate"].ToString() == "GRACE")
+                {
+                    gameState = GameState.Grace;
+                } else if(JObject.Parse(text)["gamestate"].ToString() == "END")
+                {
+                    gameState = GameState.End;
+                }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);
             }
@@ -220,7 +235,7 @@ namespace VM_Battle_Royale
                 {
                     return hackperson;
                 }
-            }   
+            }
             Console.WriteLine("Invalid input, please retry.");
             hackperson = WhoToHack();
             return hackperson;
@@ -230,19 +245,20 @@ namespace VM_Battle_Royale
         {
             // The "interface" of the hacking, allows for really easy edits to the TUI.
             int i = 0;
-            while(i < 100)
+            while (i < 100)
             {
                 Random random = new Random();
                 string wordchosen = easywords[random.Next(0, easywords.Length - 1)];
                 Console.WriteLine("Type " + wordchosen + "!");
                 string input = Console.ReadLine();
-                if(input == wordchosen)
+                if (input == wordchosen)
                 {
-                   i += 10;
-                   Console.WriteLine("Hacking progress: " + i + "%");
-                } else
+                    i += 10;
+                    Console.WriteLine("Hacking progress: " + i + "%");
+                }
+                else
                 {
-                  Console.WriteLine("Incorrect! " + input + "does not equal " + wordchosen + "!");
+                    Console.WriteLine("Incorrect! " + input + "does not equal " + wordchosen + "!");
                 }
             }
 

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace VM_Battle_Royale
         static Dictionary<string, Socket> usernames = new Dictionary<string, Socket>();
         static Dictionary<IPAddress, VMAndPass> vmandpass = new Dictionary<IPAddress, VMAndPass>();
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-         enum GameState {Start,Play,End,Grace};
+        enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
         static void Main(string[] args)
@@ -33,38 +33,39 @@ namespace VM_Battle_Royale
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
             Console.Write("Done.");
             Console.WriteLine("\nWaiting for a connection...");
-			while(true) {}
+            while (true) { }
         }
 
         private static void AcceptCallBack(IAsyncResult ar)
-         {
+        {
             //How the server handles when a client connects.
             Socket socket = _serversocket.EndAccept(ar);
             Console.WriteLine("New client connected!");
             Console.WriteLine(_clientSockets.Count);
             _clientSockets.Add(socket);
-            try {
+            try
+            {
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), socket);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 socket.Disconnect(false);
                 _clientSockets.Remove(socket);
-                
             }
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
 
         }
 
         private static void RecieveCallBack(IAsyncResult ar)
-       {
+        {
             //How the server recieves things.
             int recieved = new int();
             Socket socket = (Socket)ar.AsyncState;
-            try 
+            try
             {
                 recieved = socket.EndReceive(ar);
-            } catch(SocketException)
+            }
+            catch (SocketException)
             {
                 Disconnect(socket);
                 return;
@@ -73,7 +74,7 @@ namespace VM_Battle_Royale
             Array.Copy(_buffer, tempbuffer, recieved);
             string text = Encoding.Unicode.GetString(tempbuffer);
             //Checks to see if you legit just sent nothing to the server.
-            if(text == "")
+            if (text == "")
             {
                 Dictionary<string, string> dict = new Dictionary<string, string>();
                 dict.Add("command", "message");
@@ -81,7 +82,8 @@ namespace VM_Battle_Royale
                 try
                 {
                     socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-                } catch(SocketException)
+                }
+                catch (SocketException)
                 {
                     Disconnect(socket);
                     return;
@@ -92,16 +94,17 @@ namespace VM_Battle_Royale
             try
             {
                 command = JObject.Parse(text)["command"].ToString();
-            } catch(JsonReaderException)
+            }
+            catch (JsonReaderException)
             {
 
             }
-            if(command == "dc")
+            if (command == "dc")
             {
                 Disconnect(socket);
             }
 
-            if(command == "vm")
+            if (command == "vm")
             {
                 //This is sent when the vm monitor starts up.
                 if (gameState == GameState.Start)
@@ -136,7 +139,8 @@ namespace VM_Battle_Royale
                             try
                             {
                                 socket.Send(Encoding.ASCII.GetBytes("ERROR: You've been eliminated from this game. Please wait until the game ends to rejoin!"));
-                            } catch
+                            }
+                            catch
                             {
 
                             }
@@ -150,34 +154,13 @@ namespace VM_Battle_Royale
                         try
                         {
                             socket.Send(Encoding.ASCII.GetBytes("ERROR: Sorry, the game has already started. You can't join right now. Wait for the end of the game!"));
-                        } catch
+                        }
+                        catch
                         {
 
                         }
                         socket.Disconnect(false);
                         _clientSockets.Remove(socket);
-                    }
-
-
-                } else
-                {
-                    //Win condition for when the player destroys all other vms.
-                    foreach(KeyValuePair<IPAddress, VMAndPass> kvp in vmandpass)
-                    { if(!kvp.Value.Eliminated)
-                        {
-                            foreach(KeyValuePair<string,Socket> kvp2 in usernames)
-                            {
-                                IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
-                                if(end.Address == kvp.Key)
-                                {
-                                    Dictionary<string, string> dict = new Dictionary<string, string>();
-                                    dict.Add("command", "message");
-                                    dict.Add("response", "You have won VMBR! Congratulations!");    
-                                    kvp2.Value.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-                                }
-                            }
-                        }
-                     
                     }
                 }
             }
@@ -197,7 +180,8 @@ namespace VM_Battle_Royale
                     try
                     {
                         socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
-                    } catch
+                    }
+                    catch
                     {
                         Disconnect(socket);
                     }
@@ -205,7 +189,8 @@ namespace VM_Battle_Royale
                 }
                 else
                 {
-                    if (usernames.TryGetValue(username, out _)) {
+                    if (usernames.TryGetValue(username, out _))
+                    {
                         IPEndPoint tableip = (IPEndPoint)usernames[username].RemoteEndPoint;
                         if (tableip.Address == ip.Address)
                         {
@@ -219,7 +204,8 @@ namespace VM_Battle_Royale
                             try
                             {
                                 socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
-                            } catch
+                            }
+                            catch
                             {
                                 Disconnect(socket);
                             }
@@ -234,12 +220,14 @@ namespace VM_Battle_Royale
                             try
                             {
                                 socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
-                            } catch
+                            }
+                            catch
                             {
                                 Disconnect(socket);
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         //If no hosts connected to the server and set their username, this condition will occur.
                         usernames.Add(username, socket);
@@ -250,7 +238,8 @@ namespace VM_Battle_Royale
                         try
                         {
                             socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
-                        } catch
+                        }
+                        catch
                         {
                             Disconnect(socket);
                         }
@@ -259,55 +248,59 @@ namespace VM_Battle_Royale
             }
 
 
-                
 
 
-            
-            if(command == "startgame")
+
+
+            if (command == "startgame")
             {
                 //Starts the game, pretty obvious.
-                if(usernames.Count == vmandpass.Count && usernames.Count > 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
+                if (usernames.Count == vmandpass.Count && usernames.Count > 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
                 {
                     gameState = GameState.Grace;
-                    foreach (KeyValuePair<string,Socket> kvp in usernames)
+                    foreach (KeyValuePair<string, Socket> kvp in usernames)
                     {
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
                         dict.Add("gamestate", "graceperiod");
                         socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
-                } else
+                }
+                else
                 {
                     //Handles different errors for when the conditions aren't met.
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
-                    if(usernames.Count <= 2)
+                    if (usernames.Count <= 2)
                     {
                         dict.Add("response", "Failed to start the game. Reason: There isn't enough players to start the game.");
-                    } else if(usernames.Count != vmandpass.Count)
+                    }
+                    else if (usernames.Count != vmandpass.Count)
                     {
                         dict.Add("response", "Failed to start the game. Reason: There aren't the same amount of VMS connected as interfaces. \n This means that some vm(s) or interface(s) have not been connected to the server.");
-                    } else if(gameState != GameState.Start)
+                    }
+                    else if (gameState != GameState.Start)
                     {
                         dict.Add("response", "Failed to start the game. Reason: The game has either already started or ended.");
-                    } else if(usernames.ElementAt(0).Value != socket)
+                    }
+                    else if (usernames.ElementAt(0).Value != socket)
                     {
                         dict.Add("response", "Failed to start the game. Reason: You are not the host of this game!");
                     }
-                    
+
                     socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
             }
 
-            if(command == "showips")
+            if (command == "showips")
             {
                 //What the server does to show the HOST ips. Strictly for debugging.
                 Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                 vmbrconvert.Add("command", command);
                 int i = 1;
-                foreach (KeyValuePair<string,Socket> v in usernames)
+                foreach (KeyValuePair<string, Socket> v in usernames)
                 {
-                     
+
                     IPEndPoint tableip = (IPEndPoint)v.Value.RemoteEndPoint;
                     vmbrconvert.Add("ip" + i, tableip + " ");
                     i++;
@@ -323,11 +316,11 @@ namespace VM_Battle_Royale
                     Disconnect(socket);
                 }
             }
-            
-            if(command == "showusernames")
+
+            if (command == "showusernames")
             {
                 //We use this to show the users that are hackable and then send it to the host.
-                if(gameState == GameState.Play)
+                if (gameState == GameState.Play)
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "hackshowuser");
@@ -370,16 +363,16 @@ namespace VM_Battle_Royale
 
             }
 
-            if(command == "hackperson")
+            if (command == "hackperson")
             {
                 //This occurs when the user successfully hacks a person.
-                if(gameState == GameState.Play)
-                { 
+                if (gameState == GameState.Play)
+                {
                     //Creating a message for the user that got hacked.
                     Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                     vmbrconvert.Add("command", "hackperson");
                     vmbrconvert.Add("response", "You got hacked!");
-                    string hackperson = JObject.Parse(text).Value<string>( "persontobehacked");
+                    string hackperson = JObject.Parse(text).Value<string>("persontobehacked");
                     string responsesend = JsonConvert.SerializeObject(vmbrconvert);
                     Socket sockettohack;
                     usernames.TryGetValue(hackperson, out sockettohack);
@@ -397,17 +390,18 @@ namespace VM_Battle_Royale
                     vmbrconvert2.Add("ip", convert.Ngrokurl);
                     string responsesend2 = JsonConvert.SerializeObject(vmbrconvert2);
                     socket.Send(Encoding.ASCII.GetBytes(responsesend2));
-                } 
-                
+                }
+
             }
             try
             {
-                
-            } catch(SocketException)
+
+            }
+            catch (SocketException)
             {
                 Disconnect(socket);
             }
-            catch(NullReferenceException)
+            catch (NullReferenceException)
             {
                 //Crash protection, VERY OLD code.
                 socket.Send(Encoding.ASCII.GetBytes("Bro please fuck off"));
@@ -426,12 +420,12 @@ namespace VM_Battle_Royale
         //Disconnect function, is used a lot, if you wanna change what the server does when a client disconnects, use this.
         public static void Disconnect(Socket socket)
         {
-            foreach(KeyValuePair<string,Socket> kvp in usernames)
+            foreach (KeyValuePair<string, Socket> kvp in usernames)
             {
-             if(kvp.Value == socket)
+                if (kvp.Value == socket)
                 {
                     usernames.Remove(kvp.Key);
-                } 
+                }
             }
             socket.Disconnect(false);
             _clientSockets.Remove(socket);
@@ -440,7 +434,7 @@ namespace VM_Battle_Royale
         public static void CheckIfDisconnected(Socket socket)
         {
             //Pretty bad way of checking if the user is disconnected. IDK if this works.
-            while(true)
+            while (true)
             {
                 Thread.Sleep(30000);
                 if (!socket.Connected)
@@ -449,12 +443,14 @@ namespace VM_Battle_Royale
                     try
                     {
                         vmandpass[end.Address].Disconnected = true;
-                    } catch
+                    }
+                    catch
                     {
                         VMAndPass e = new VMAndPass();
                         e.Disconnected = true;
                         vmandpass.Add(end.Address, e);
                     }
+                    //2 minutes is the timeout, and then it checks if they were eliminated.
                     Thread.Sleep(120000);
                     CheckIfEliminated(socket);
                 }
@@ -464,18 +460,37 @@ namespace VM_Battle_Royale
         public static void CheckIfEliminated(Socket socket)
         {
             //When this runs the disconnected timer has ran out, if it reconnected before this function ran, it is not eliminated.
-            if(!socket.Connected)
+            if (!socket.Connected)
             {
                 IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
                 vmandpass[end.Address].Eliminated = true;
-                foreach(KeyValuePair<string,Socket> kvp in usernames)
+                foreach (KeyValuePair<string, Socket> kvp in usernames)
                 {
                     IPEndPoint end2 = (IPEndPoint)kvp.Value.RemoteEndPoint;
-                    if(end2.Address == end.Address)
+                    if (end2.Address == end.Address)
                     {
                         kvp.Value.Send(Encoding.ASCII.GetBytes("RIP! " + kvp.Key + "has been eliminated from VMBR!"));
+                        //Win condition for when the player destroys all other vms.
+                        foreach (KeyValuePair<IPAddress, VMAndPass> kvp2 in vmandpass)
+                        {
+                            if (!kvp2.Value.Eliminated)
+                            {
+                                foreach (KeyValuePair<string, Socket> kvp3 in usernames)
+                                {
+                                    IPEndPoint end3 = (IPEndPoint)socket.RemoteEndPoint;
+                                    if (end3.Address == kvp2.Key)
+                                    {
+                                        Dictionary<string, string> dict = new Dictionary<string, string>();
+                                        dict.Add("command", "message");
+                                        dict.Add("response", "You have won VMBR! Congratulations!");
+                                        kvp3.Value.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                                    }
+                                }
+                            }
+
+                        }
                     }
-                    
+
                 }
             }
         }
@@ -487,7 +502,7 @@ namespace VM_Battle_Royale
         public string Ngrokurl { get; set; }
         public string Pass { get; set; }
         public bool Eliminated { get; set; }
-        
+
         public bool Disconnected { get; set; }
     }
 }
