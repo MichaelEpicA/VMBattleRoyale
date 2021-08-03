@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -275,6 +276,22 @@ namespace VM_Battle_Royale
             string vmbrusername = JsonConvert.SerializeObject(dict);
             _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
             asyncrec = 1;
+            Thread th = new Thread(KeepAlive);
+            th.Start(username);
+        }
+
+        private static void KeepAlive(Object obj)
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "keepalive");
+            dict.Add("playername", (string)obj);
+            while (true)
+            {
+                Thread.Sleep(10000);
+                string JSONKeepAlive = JsonConvert.SerializeObject(dict);
+                _clientSocket.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
+            }
+            
         }
     }
 }

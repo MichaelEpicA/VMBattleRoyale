@@ -17,11 +17,15 @@ namespace VM_Battle_Royale
         static Dictionary<string, Socket> usernames = new Dictionary<string, Socket>();
         static Dictionary<IPAddress, VMAndPass> vmandpass = new Dictionary<IPAddress, VMAndPass>();
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        static Thread thr = new Thread(KeepAlive);
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
+        static byte[] _keepalivebuffer = new byte[1024];
         static void Main(string[] args)
         {
+            thr.Start();
             SetupServer();
         }
 
@@ -31,6 +35,9 @@ namespace VM_Battle_Royale
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
             _serversocket.Listen(5);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
+            _keepalive.Bind(new IPEndPoint(IPAddress.Any, 13001));
+            _keepalive.Listen(5);
+            _keepalive.BeginAccept(new AsyncCallback(KeepAliveAccept), null);
             Console.Write("Done.");
             Console.WriteLine("\nWaiting for a connection...");
             while (true) { }
@@ -164,7 +171,7 @@ namespace VM_Battle_Royale
                     }
                 }
             }
-
+            
             if (command == "username")
             {
                 //Very basic username system, works by just taking the playername from the json and trying to add it to usernames.
@@ -416,7 +423,7 @@ namespace VM_Battle_Royale
             {
                 Disconnect(socket);
             }
-        }
+            }
         //Disconnect function, is used a lot, if you wanna change what the server does when a client disconnects, use this.
         public static void Disconnect(Socket socket)
         {
@@ -494,6 +501,17 @@ namespace VM_Battle_Royale
                 }
             }
         }
+
+        public static void KeepAlive(IAsyncResult ar)
+        {
+
+        }
+
+        public static void KeepAliveAccept(IAsyncResult ar)
+        {
+            Socket socket = _keepalive.EndAccept(ar);
+            socket.BeginReceive(_keepalivebuffer, 0, _keepalivebuffer.Length, SocketFlags.None, new AsyncCallback(KeepAlive), null);
+        }
     }
 
     class VMAndPass
@@ -504,6 +522,8 @@ namespace VM_Battle_Royale
         public bool Eliminated { get; set; }
 
         public bool Disconnected { get; set; }
+
+        public bool KeepAliveMet { get; set; }
     }
 }
 
