@@ -505,6 +505,5 @@ namespace VM_Battle_Royale
 
         public bool Disconnected { get; set; }
     }
-    //testr
 }
 
