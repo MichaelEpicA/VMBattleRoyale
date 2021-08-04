@@ -18,7 +18,8 @@ namespace VM_Battle_Royale
         static Dictionary<IPAddress, VMAndPass> vmandpass = new Dictionary<IPAddress, VMAndPass>();
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        static Thread thr = new Thread(KeepAlive);
+        static Thread thr = new Thread(KeepAliveStart);
+        static int maxkeepalivepingsfailed;
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
@@ -35,9 +36,6 @@ namespace VM_Battle_Royale
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
             _serversocket.Listen(5);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
-            _keepalive.Bind(new IPEndPoint(IPAddress.Any, 13001));
-            _keepalive.Listen(5);
-            _keepalive.BeginAccept(new AsyncCallback(KeepAliveAccept), null);
             Console.Write("Done.");
             Console.WriteLine("\nWaiting for a connection...");
             while (true) { }
@@ -502,15 +500,110 @@ namespace VM_Battle_Royale
             }
         }
 
+        //Handles receiving keep alive pings.
         public static void KeepAlive(IAsyncResult ar)
         {
+            while(true)
+            {
+                int recieved = new int();
+                Socket socket = (Socket)ar.AsyncState;
+                try
+                {
+                    recieved = socket.EndReceive(ar);
+                }
+                catch (SocketException)
+                {
+                    Disconnect(socket);
+                    return;
+                }
+                byte[] tempbuffer = new byte[recieved];
+                Array.Copy(_buffer, tempbuffer, recieved);
+                string text = Encoding.Unicode.GetString(tempbuffer);
+                if (text == "")
+                {
+                    Dictionary<string, string> dict = new Dictionary<string, string>();
+                    dict.Add("command", "message");
+                    dict.Add("response", "Invalid command.");
+                    try
+                    {
+                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                    }
+                    catch (SocketException)
+                    {
+                        Disconnect(socket);
+                        return;
+                    }
+                    return;
+                }
+                string command = "";
+                try
+                {
+                    command = JObject.Parse(text)["command"].ToString();
+                }
+                catch (JsonReaderException)
+                {
+
+                }
+                if (command == "dc")
+                {
+                    Disconnect(socket);
+                }
+                else if (command == "keepalive")
+                {
+                    IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
+                    vmandpass[ip.Address].KeepAliveMet = true;
+                    vmandpass[ip.Address].Disconnected = false;
+                }
+            }
+            
+
 
         }
 
+        //Handles clients connecting to the keepalive.
         public static void KeepAliveAccept(IAsyncResult ar)
         {
             Socket socket = _keepalive.EndAccept(ar);
-            socket.BeginReceive(_keepalivebuffer, 0, _keepalivebuffer.Length, SocketFlags.None, new AsyncCallback(KeepAlive), null);
+            try
+            {
+                socket.BeginReceive(_keepalivebuffer, 0, _keepalivebuffer.Length, SocketFlags.None, new AsyncCallback(KeepAlive), null);
+            } catch(SocketException)
+            {
+                Disconnect(socket);
+                return;
+            }
+
+        }
+
+        public static void KeepAliveCheck()
+        {
+            while(true)
+            {
+                Thread.Sleep(21000);
+                foreach(KeyValuePair<IPAddress,VMAndPass> kvp in vmandpass)
+                {
+                    if(kvp.Value.KeepAliveMet == false && kvp.Value.KeepAlivePingsFailed != maxkeepalivepingsfailed)
+                    {
+                        kvp.Value.KeepAlivePingsFailed += 1;
+                        kvp.Value.Disconnected = true;
+                    } else if(kvp.Value.KeepAliveMet == true)
+                    {
+                        kvp.Value.KeepAlivePingsFailed = 0;
+                    } else if(kvp.Value.KeepAlivePingsFailed >= maxkeepalivepingsfailed)
+                    {
+                        kvp.Value.Eliminated = true;
+                        kvp.Value.Disconnected = false;
+                    }
+                }
+            }
+        }
+
+        //This is launched on a new thread, gets the KeepAlive and KeepAliveAccept and KeepAliveCheck functions ready.
+        public static void KeepAliveStart()
+        {
+            _keepalive.Bind(new IPEndPoint(IPAddress.Any, 13001));
+            _keepalive.Listen(5);
+            _keepalive.BeginAccept(new AsyncCallback(KeepAliveAccept), null);
         }
     }
 
@@ -524,6 +617,8 @@ namespace VM_Battle_Royale
         public bool Disconnected { get; set; }
 
         public bool KeepAliveMet { get; set; }
+
+        public int KeepAlivePingsFailed { get; set; }
     }
 }
 

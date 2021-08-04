@@ -13,6 +13,7 @@ namespace VM_Battle_Royale
     {
         static byte[] _buffer = new byte[1024];
         private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        private static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static string[] easywords = { "remove", "load", "signal", "right", "part", "url", "event", "stat", "call", "anon", "init", "dir", "add", "cookies", "handle", "ping", "ghost", "count", "loop", "temp", "status", "xml", "num", "bytes", "join", "intel", "reset", "info", "global", "size", "port", "get", "http", "emit", "delete", "buffer", "root", "file", "write", "socket", "bit", "key", "pass", "host", "val", "send", "list", "poly", "data", "log", "user", "upload", "set", "system", "com", "type", "add", "net", "client", "domain", "left", "point" };
         private static List<string> usernames = new List<string>();
         public static int asyncrec = new int();
@@ -27,13 +28,14 @@ namespace VM_Battle_Royale
         private static void LoopConnect()
         {
             int attempts = 0;
-            while (!_clientSocket.Connected)
+            while (!_clientSocket.Connected && !_keepalive.Connected)
             {
 
                 try
                 {
                     attempts++;
                     _clientSocket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
+                    _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
                 }
                 catch (SocketException)
                 {
@@ -289,7 +291,7 @@ namespace VM_Battle_Royale
             {
                 Thread.Sleep(10000);
                 string JSONKeepAlive = JsonConvert.SerializeObject(dict);
-                _clientSocket.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
+                _keepalive.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
             }
             
         }
