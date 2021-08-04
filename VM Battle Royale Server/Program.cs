@@ -591,6 +591,7 @@ namespace VM_Battle_Royale
 
         }
 
+        //Actual check for KeepAlive.
         public static void KeepAliveCheck()
         {
             while(true)
@@ -620,6 +621,7 @@ namespace VM_Battle_Royale
             _keepalive.Bind(new IPEndPoint(IPAddress.Any, 13001));
             _keepalive.Listen(5);
             _keepalive.BeginAccept(new AsyncCallback(KeepAliveAccept), null);
+            KeepAliveCheck();
         }
     }
 
