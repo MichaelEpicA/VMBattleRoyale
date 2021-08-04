@@ -83,7 +83,7 @@ namespace VM_Battle_Royale
             File.Delete("vncpasssetup.txt");
             RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
-            string test = Environment.GetCommandLineArgs()[0] + @"-setupfinished";
+            string test = Environment.GetCommandLineArgs()[0] + @"-setupfinished".Replace(".dll", ".exe");
             startup.SetValue("VMBR Monitor", test.Insert(0, '"'.ToString()).Insert(Environment.GetCommandLineArgs()[0].Length + 1, '"'.ToString()));
         }
 
