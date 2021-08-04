@@ -233,6 +233,22 @@ namespace VM_Battle_Royale
                                 Disconnect(socket);
                             }
                         }
+                        if (username.Length > 16)
+                        {
+                            //Username is too long
+                            Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
+                            vmbrconvert.Add("command", command);
+                            vmbrconvert.Add("response", "Sorry! That username is too long.");
+                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
+                            try
+                            {
+                                socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                            }
+                            catch
+                            {
+                                Disconnect(socket);
+                            }
+                        }
                     }
                     else
                     {
