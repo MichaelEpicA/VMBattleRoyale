@@ -580,9 +580,7 @@ namespace VM_Battle_Royale
                         vmandpass[ip].Disconnected = false;
                     }
                 }
-
-                Thread.Sleep(5000);
-                vmandpass[IPAddress.Parse(JObject.Parse(text)["arg1"].ToString())].KeepAliveMet = false;
+                
             }
             
 
@@ -626,6 +624,7 @@ namespace VM_Battle_Royale
                         kvp.Value.Disconnected = false;
                     }
                 }
+                vmandpass[IPAddress.Parse(JObject.Parse(text)["arg1"].ToString())].KeepAliveMet = false;
             }
         }
 
