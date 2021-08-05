@@ -17,10 +17,12 @@ namespace VM_Battle_Royale
         private static string[] easywords = { "remove", "load", "signal", "right", "part", "url", "event", "stat", "call", "anon", "init", "dir", "add", "cookies", "handle", "ping", "ghost", "count", "loop", "temp", "status", "xml", "num", "bytes", "join", "intel", "reset", "info", "global", "size", "port", "get", "http", "emit", "delete", "buffer", "root", "file", "write", "socket", "bit", "key", "pass", "host", "val", "send", "list", "poly", "data", "log", "user", "upload", "set", "system", "com", "type", "add", "net", "client", "domain", "left", "point" };
         private static List<string> usernames = new List<string>();
         public static int asyncrec = new int();
+
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static void Main(string[] args)
         {
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(SendDisconnectToServer);
             LoopConnect();
             Console.ReadLine();
         }
@@ -286,7 +288,7 @@ namespace VM_Battle_Royale
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "keepalive");
-            dict.Add("playername", (string)obj);
+            dict.Add("arg1", (string)obj);
             while (true)
             {
                 Thread.Sleep(10000);
@@ -294,6 +296,15 @@ namespace VM_Battle_Royale
                 _keepalive.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
             }
             
+        }
+
+        private static void SendDisconnectToServer(object sender, ConsoleCancelEventArgs args)
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "dc");
+            _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+            _keepalive.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+            Environment.Exit(0);
         }
     }
 }

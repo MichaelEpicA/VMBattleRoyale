@@ -22,6 +22,7 @@ namespace VM_Battle_Royale
 {
     public partial class Form1 : Form
     {
+        private static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         public Form1()
         {
@@ -55,15 +56,20 @@ namespace VM_Battle_Royale
             while (!socket.Connected)
             {
                 socket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
+                _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
             }
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "vm");
             dict.Add("ngrokurl", newngrokurl);
             string vmbrformat = JsonConvert.SerializeObject(dict);
+            Thread th = new Thread(KeepAlive);
+            IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
+            th.Start(end.Address.ToString());
             socket.Send(Encoding.ASCII.GetBytes(vmbrformat));
             byte[] responsebuffer = { };
             socket.Receive(responsebuffer);
             string response = JObject.Parse(Encoding.ASCII.GetString(responsebuffer)).Value<string>("response");
+
         }
 
         private void SetupMonitor()
@@ -132,6 +138,20 @@ namespace VM_Battle_Royale
                     Hide();
                 }
             }
+        }
+
+        private static void KeepAlive(Object obj)
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "keepalive");
+            dict.Add("arg1", (string)obj);
+            while (true)
+            {
+                Thread.Sleep(10000);
+                string JSONKeepAlive = JsonConvert.SerializeObject(dict);
+                _keepalive.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
+            }
+
         }
     }
 }

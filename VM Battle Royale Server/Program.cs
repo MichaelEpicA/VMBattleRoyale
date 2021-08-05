@@ -19,7 +19,7 @@ namespace VM_Battle_Royale
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         static Thread thr = new Thread(KeepAliveStart);
-        static int maxkeepalivepingsfailed;
+        static int maxkeepalivepingsfailed = 0;
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
@@ -532,6 +532,11 @@ namespace VM_Battle_Royale
                     Disconnect(socket);
                     return;
                 }
+                catch(NullReferenceException)
+                {
+                    Disconnect(socket);
+                    return;
+                }
                 byte[] tempbuffer = new byte[recieved];
                 Array.Copy(_buffer, tempbuffer, recieved);
                 string text = Encoding.Unicode.GetString(tempbuffer);
@@ -563,13 +568,21 @@ namespace VM_Battle_Royale
                 if (command == "dc")
                 {
                     Disconnect(socket);
+                    return;
                 }
                 else if (command == "keepalive")
                 {
-                    IPEndPoint ip = (IPEndPoint)socket.RemoteEndPoint;
-                    vmandpass[ip.Address].KeepAliveMet = true;
-                    vmandpass[ip.Address].Disconnected = false;
+                    string arg1 = JObject.Parse(text)["arg1"].ToString();
+                    IPAddress ip;
+                    if(IPAddress.TryParse(arg1, out ip))
+                    {
+                        vmandpass[ip].KeepAliveMet = true;
+                        vmandpass[ip].Disconnected = false;
+                    }
                 }
+
+                Thread.Sleep(5000);
+                vmandpass[IPAddress.Parse(JObject.Parse(text)["arg1"].ToString())].KeepAliveMet = false;
             }
             
 
@@ -582,7 +595,7 @@ namespace VM_Battle_Royale
             Socket socket = _keepalive.EndAccept(ar);
             try
             {
-                socket.BeginReceive(_keepalivebuffer, 0, _keepalivebuffer.Length, SocketFlags.None, new AsyncCallback(KeepAlive), null);
+                socket.BeginReceive(_keepalivebuffer, 0, _keepalivebuffer.Length, SocketFlags.None, new AsyncCallback(KeepAlive), socket);
             } catch(SocketException)
             {
                 Disconnect(socket);
@@ -597,6 +610,7 @@ namespace VM_Battle_Royale
             while(true)
             {
                 Thread.Sleep(21000);
+
                 foreach(KeyValuePair<IPAddress,VMAndPass> kvp in vmandpass)
                 {
                     if(kvp.Value.KeepAliveMet == false && kvp.Value.KeepAlivePingsFailed != maxkeepalivepingsfailed)
