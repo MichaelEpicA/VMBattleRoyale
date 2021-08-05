@@ -19,7 +19,7 @@ namespace VM_Battle_Royale
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         static Thread thr = new Thread(KeepAliveStart);
-        static int maxkeepalivepingsfailed = 0;
+        static int maxkeepalivepingsfailed = 10;
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
@@ -618,13 +618,14 @@ namespace VM_Battle_Royale
                     } else if(kvp.Value.KeepAliveMet == true)
                     {
                         kvp.Value.KeepAlivePingsFailed = 0;
+                        kvp.Value.KeepAliveMet = false;
                     } else if(kvp.Value.KeepAlivePingsFailed >= maxkeepalivepingsfailed)
                     {
                         kvp.Value.Eliminated = true;
                         kvp.Value.Disconnected = false;
+                        kvp.Value.KeepAliveMet = false;
                     }
                 }
-                vmandpass[IPAddress.Parse(JObject.Parse(text)["arg1"].ToString())].KeepAliveMet = false;
             }
         }
 
