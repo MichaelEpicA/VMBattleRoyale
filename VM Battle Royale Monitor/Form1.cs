@@ -78,6 +78,7 @@ namespace VM_Battle_Royale
             while (!socket.Connected)
             {
                 socket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
+                _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
             }
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "vm");
@@ -89,8 +90,8 @@ namespace VM_Battle_Royale
             File.Delete("vncpasssetup.txt");
             RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
-            string test = Environment.GetCommandLineArgs()[0] + @"-setupfinished".Replace(".dll", ".exe");
-            startup.SetValue("VMBR Monitor", test.Insert(0, '"'.ToString()).Insert(Environment.GetCommandLineArgs()[0].Length + 1, '"'.ToString()));
+            string test = '"' + Environment.CurrentDirectory + @"""VM Battle Royale Monitor.exe""" + @"-setupfinished";
+            startup.SetValue("VMBR Monitor", test);
         }
 
         private string ReRunPrograms()

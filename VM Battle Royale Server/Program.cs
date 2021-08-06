@@ -215,7 +215,7 @@ namespace VM_Battle_Royale
                                 Disconnect(socket);
                             }
                         }
-                        if (usernames.ContainsKey(username))
+                        else if (usernames.ContainsKey(username))
                         {
                             //Username exists
                             Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
@@ -519,8 +519,6 @@ namespace VM_Battle_Royale
         //Handles receiving keep alive pings.
         public static void KeepAlive(IAsyncResult ar)
         {
-            while(true)
-            {
                 int recieved = new int();
                 Socket socket = (Socket)ar.AsyncState;
                 try
@@ -585,7 +583,7 @@ namespace VM_Battle_Royale
             
 
 
-        }
+        
 
         //Handles clients connecting to the keepalive.
         public static void KeepAliveAccept(IAsyncResult ar)
