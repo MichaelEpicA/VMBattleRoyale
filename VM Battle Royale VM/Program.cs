@@ -65,6 +65,8 @@ namespace VM_Battle_Royale
             if (password != "")
             {
                 password = RandomString();
+                Console.WriteLine("Your password (you don't have to remember it) is: ");
+                Console.Write(password);
             }
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
