@@ -89,7 +89,7 @@ namespace VM_Battle_Royale
 			{
 			byte[] randomBytes = new byte[sizeof(int)];
 			crypto.GetBytes(randomBytes);
-			generatedString = BitConverter.ToInt32(randomBytes);
+			generatedString = "" + BitConverter.ToInt32(randomBytes);
 			}
 
 			return generatedString;
