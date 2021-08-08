@@ -34,7 +34,7 @@ namespace VM_Battle_Royale
         {
             Console.Write("Setting up VMBR server...");
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
-            _serversocket.Listen(5);
+            _serversocket.Listen(400);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
             Console.Write("Done.");
             Console.WriteLine("\nWaiting for a connection...");
@@ -62,7 +62,7 @@ namespace VM_Battle_Royale
         }
 
         private static void RecieveCallBack(IAsyncResult ar)
-        {
+            {
             //How the server recieves things.
             int recieved = new int();
             Socket socket = (Socket)ar.AsyncState;
@@ -292,7 +292,7 @@ namespace VM_Battle_Royale
                     //Handles different errors for when the conditions aren't met.
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
-                    if (usernames.Count <= 2)
+                    if (usernames.Count < 2)
                     {
                         dict.Add("response", "Failed to start the game. Reason: There isn't enough players to start the game.");
                     }
@@ -631,7 +631,7 @@ namespace VM_Battle_Royale
         public static void KeepAliveStart()
         {
             _keepalive.Bind(new IPEndPoint(IPAddress.Any, 13001));
-            _keepalive.Listen(5);
+            _keepalive.Listen(400);
             _keepalive.BeginAccept(new AsyncCallback(KeepAliveAccept), null);
             KeepAliveCheck();
         }
