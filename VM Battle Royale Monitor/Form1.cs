@@ -87,7 +87,7 @@ namespace VM_Battle_Royale
             IPEndPoint endPoint = (IPEndPoint)socket.LocalEndPoint;
             dict.Add("ip", endPoint.Address.ToString() + endPoint.Port.ToString());
             socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-            File.Delete("vncpasssetup.txt");
+            //File.Delete("vncpasssetup.txt");
             RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
             string test = '"' + Environment.CurrentDirectory + @"""VM Battle Royale Monitor.exe""" + @"-setupfinished";
