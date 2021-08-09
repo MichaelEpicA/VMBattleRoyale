@@ -64,7 +64,7 @@ namespace VM_Battle_Royale
         private static void RecieveCallBack(IAsyncResult ar)
             {
             //How the server recieves things.
-            int recieved = new int();
+           int recieved = new int();
             Socket socket = (Socket)ar.AsyncState;
             try
             {
@@ -114,7 +114,7 @@ namespace VM_Battle_Royale
                 //This is sent when the vm monitor starts up.
                 if (gameState == GameState.Start)
                 {
-                    IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
+                    IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
 
                     VMAndPass convert = new VMAndPass
                     {
@@ -124,7 +124,14 @@ namespace VM_Battle_Royale
                     };
                     //Check if the client disconnected. (please someone make this better holy crap)
                     Task.Run(() => CheckIfDisconnected(socket));
-                    vmandpass.Add(end.Address, convert);
+                    try 
+                    {
+                        vmandpass.Add(end.Address, convert);
+                    }
+                    catch
+                    {
+
+                    }
                 }
                 else if (gameState == GameState.Play)
                 {
@@ -276,7 +283,7 @@ namespace VM_Battle_Royale
             if (command == "startgame")
             {
                 //Starts the game, pretty obvious.
-                if (usernames.Count == vmandpass.Count && usernames.Count > 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
+                if (usernames.Count == vmandpass.Count && usernames.Count >= 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
                 {
                     gameState = GameState.Grace;
                     foreach (KeyValuePair<string, Socket> kvp in usernames)
@@ -441,6 +448,7 @@ namespace VM_Battle_Royale
         //Disconnect function, is used a lot, if you wanna change what the server does when a client disconnects, use this.
         public static void Disconnect(Socket socket)
         {
+            bool error = false;
             foreach (KeyValuePair<string, Socket> kvp in usernames)
             {
                 if (kvp.Value == socket)
@@ -448,8 +456,27 @@ namespace VM_Battle_Royale
                     usernames.Remove(kvp.Key);
                 }
             }
-            socket.Disconnect(false);
-            _clientSockets.Remove(socket);
+            try
+            {
+                IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
+                vmandpass[end.Address].Disconnected = true;
+                error = false;
+            } catch
+            {
+                error = true;
+            }
+            if(error)
+            {
+                socket.Disconnect(false);
+                _clientSockets.Remove(socket);
+            } else
+            {
+                IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
+                vmandpass.Remove(end.Address);
+                socket.Disconnect(false);
+                _clientSockets.Remove(socket);
+            }
+            
         }
 
         public static void CheckIfDisconnected(Socket socket)
