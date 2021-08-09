@@ -17,11 +17,16 @@ namespace VM_Battle_Royale
         static Dictionary<string, Socket> usernames = new Dictionary<string, Socket>();
         static Dictionary<IPAddress, VMAndPass> vmandpass = new Dictionary<IPAddress, VMAndPass>();
         static Socket _serversocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        static Thread thr = new Thread(KeepAliveStart);
+        static int maxkeepalivepingsfailed = 10;
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
+        static byte[] _keepalivebuffer = new byte[1024];
         static void Main(string[] args)
         {
+            thr.Start();
             SetupServer();
         }
 
@@ -29,7 +34,7 @@ namespace VM_Battle_Royale
         {
             Console.Write("Setting up VMBR server...");
             _serversocket.Bind(new IPEndPoint(IPAddress.Any, 13000));
-            _serversocket.Listen(5);
+            _serversocket.Listen(400);
             _serversocket.BeginAccept(new AsyncCallback(AcceptCallBack), null);
             Console.Write("Done.");
             Console.WriteLine("\nWaiting for a connection...");
@@ -57,7 +62,7 @@ namespace VM_Battle_Royale
         }
 
         private static void RecieveCallBack(IAsyncResult ar)
-        {
+            {
             //How the server recieves things.
             int recieved = new int();
             Socket socket = (Socket)ar.AsyncState;
@@ -164,7 +169,7 @@ namespace VM_Battle_Royale
                     }
                 }
             }
-
+            
             if (command == "username")
             {
                 //Very basic username system, works by just taking the playername from the json and trying to add it to usernames.
@@ -210,12 +215,28 @@ namespace VM_Battle_Royale
                                 Disconnect(socket);
                             }
                         }
-                        if (usernames.ContainsKey(username))
+                        else if (usernames.ContainsKey(username))
                         {
                             //Username exists
                             Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
                             vmbrconvert.Add("command", command);
                             vmbrconvert.Add("response", "Sorry! That username already exists!");
+                            string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
+                            try
+                            {
+                                socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                            }
+                            catch
+                            {
+                                Disconnect(socket);
+                            }
+                        }
+                        if (username.Length > 16)
+                        {
+                            //Username is too long
+                            Dictionary<string, string> vmbrconvert = new Dictionary<string, string>();
+                            vmbrconvert.Add("command", command);
+                            vmbrconvert.Add("response", "Sorry! That username is too long.");
                             string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             try
                             {
@@ -271,7 +292,7 @@ namespace VM_Battle_Royale
                     //Handles different errors for when the conditions aren't met.
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
-                    if (usernames.Count <= 2)
+                    if (usernames.Count < 2)
                     {
                         dict.Add("response", "Failed to start the game. Reason: There isn't enough players to start the game.");
                     }
@@ -416,7 +437,7 @@ namespace VM_Battle_Royale
             {
                 Disconnect(socket);
             }
-        }
+            }
         //Disconnect function, is used a lot, if you wanna change what the server does when a client disconnects, use this.
         public static void Disconnect(Socket socket)
         {
@@ -494,6 +515,126 @@ namespace VM_Battle_Royale
                 }
             }
         }
+
+        //Handles receiving keep alive pings.
+        public static void KeepAlive(IAsyncResult ar)
+        {
+                int recieved = new int();
+                Socket socket = (Socket)ar.AsyncState;
+                try
+                {
+                    recieved = socket.EndReceive(ar);
+                }
+                catch (SocketException)
+                {
+                    Disconnect(socket);
+                    return;
+                }
+                catch(NullReferenceException)
+                {
+                    Disconnect(socket);
+                    return;
+                }
+                byte[] tempbuffer = new byte[recieved];
+                Array.Copy(_buffer, tempbuffer, recieved);
+                string text = Encoding.Unicode.GetString(tempbuffer);
+                if (text == "")
+                {
+                    Dictionary<string, string> dict = new Dictionary<string, string>();
+                    dict.Add("command", "message");
+                    dict.Add("response", "Invalid command.");
+                    try
+                    {
+                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                    }
+                    catch (SocketException)
+                    {
+                        Disconnect(socket);
+                        return;
+                    }
+                    return;
+                }
+                string command = "";
+                try
+                {
+                    command = JObject.Parse(text)["command"].ToString();
+                }
+                catch (JsonReaderException)
+                {
+
+                }
+                if (command == "dc")
+                {
+                    Disconnect(socket);
+                    return;
+                }
+                else if (command == "keepalive")
+                {
+                    string arg1 = JObject.Parse(text)["arg1"].ToString();
+                    IPAddress ip;
+                    if(IPAddress.TryParse(arg1, out ip))
+                    {
+                        vmandpass[ip].KeepAliveMet = true;
+                        vmandpass[ip].Disconnected = false;
+                    }
+                }
+                
+            }
+            
+
+
+        
+
+        //Handles clients connecting to the keepalive.
+        public static void KeepAliveAccept(IAsyncResult ar)
+        {
+            Socket socket = _keepalive.EndAccept(ar);
+            try
+            {
+                socket.BeginReceive(_keepalivebuffer, 0, _keepalivebuffer.Length, SocketFlags.None, new AsyncCallback(KeepAlive), socket);
+            } catch(SocketException)
+            {
+                Disconnect(socket);
+                return;
+            }
+
+        }
+
+        //Actual check for KeepAlive.
+        public static void KeepAliveCheck()
+        {
+            while(true)
+            {
+                Thread.Sleep(21000);
+
+                foreach(KeyValuePair<IPAddress,VMAndPass> kvp in vmandpass)
+                {
+                    if(kvp.Value.KeepAliveMet == false && kvp.Value.KeepAlivePingsFailed != maxkeepalivepingsfailed)
+                    {
+                        kvp.Value.KeepAlivePingsFailed += 1;
+                        kvp.Value.Disconnected = true;
+                    } else if(kvp.Value.KeepAliveMet == true)
+                    {
+                        kvp.Value.KeepAlivePingsFailed = 0;
+                        kvp.Value.KeepAliveMet = false;
+                    } else if(kvp.Value.KeepAlivePingsFailed >= maxkeepalivepingsfailed)
+                    {
+                        kvp.Value.Eliminated = true;
+                        kvp.Value.Disconnected = false;
+                        kvp.Value.KeepAliveMet = false;
+                    }
+                }
+            }
+        }
+
+        //This is launched on a new thread, gets the KeepAlive and KeepAliveAccept and KeepAliveCheck functions ready.
+        public static void KeepAliveStart()
+        {
+            _keepalive.Bind(new IPEndPoint(IPAddress.Any, 13001));
+            _keepalive.Listen(400);
+            _keepalive.BeginAccept(new AsyncCallback(KeepAliveAccept), null);
+            KeepAliveCheck();
+        }
     }
 
     class VMAndPass
@@ -504,6 +645,10 @@ namespace VM_Battle_Royale
         public bool Eliminated { get; set; }
 
         public bool Disconnected { get; set; }
+
+        public bool KeepAliveMet { get; set; }
+
+        public int KeepAlivePingsFailed { get; set; }
     }
 }
 

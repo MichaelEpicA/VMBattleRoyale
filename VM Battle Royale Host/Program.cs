@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -12,13 +13,16 @@ namespace VM_Battle_Royale
     {
         static byte[] _buffer = new byte[1024];
         private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        private static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static string[] easywords = { "remove", "load", "signal", "right", "part", "url", "event", "stat", "call", "anon", "init", "dir", "add", "cookies", "handle", "ping", "ghost", "count", "loop", "temp", "status", "xml", "num", "bytes", "join", "intel", "reset", "info", "global", "size", "port", "get", "http", "emit", "delete", "buffer", "root", "file", "write", "socket", "bit", "key", "pass", "host", "val", "send", "list", "poly", "data", "log", "user", "upload", "set", "system", "com", "type", "add", "net", "client", "domain", "left", "point" };
         private static List<string> usernames = new List<string>();
         public static int asyncrec = new int();
+
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static void Main(string[] args)
         {
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(SendDisconnectToServer);
             LoopConnect();
             Console.ReadLine();
         }
@@ -26,13 +30,14 @@ namespace VM_Battle_Royale
         private static void LoopConnect()
         {
             int attempts = 0;
-            while (!_clientSocket.Connected)
+            while (!_clientSocket.Connected && !_keepalive.Connected)
             {
 
                 try
                 {
                     attempts++;
                     _clientSocket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
+                    _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
                 }
                 catch (SocketException)
                 {
@@ -275,6 +280,31 @@ namespace VM_Battle_Royale
             string vmbrusername = JsonConvert.SerializeObject(dict);
             _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
             asyncrec = 1;
+            Thread th = new Thread(KeepAlive);
+            th.Start(username);
+        }
+
+        private static void KeepAlive(Object obj)
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "keepalive");
+            dict.Add("arg1", (string)obj);
+            while (true)
+            {
+                Thread.Sleep(10000);
+                string JSONKeepAlive = JsonConvert.SerializeObject(dict);
+                _keepalive.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
+            }
+            
+        }
+
+        private static void SendDisconnectToServer(object sender, ConsoleCancelEventArgs args)
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "dc");
+            _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+            _keepalive.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+            Environment.Exit(0);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace VM_Battle_Royale
 {
     public partial class Form1 : Form
     {
+        private static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         public Form1()
         {
@@ -55,15 +56,20 @@ namespace VM_Battle_Royale
             while (!socket.Connected)
             {
                 socket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
+                _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
             }
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "vm");
             dict.Add("ngrokurl", newngrokurl);
             string vmbrformat = JsonConvert.SerializeObject(dict);
-            socket.Send(Encoding.ASCII.GetBytes(vmbrformat));
+            Thread th = new Thread(KeepAlive);
+            IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
+            th.Start(end.Address.ToString());
+            socket.Send(Encoding.Unicode.GetBytes(vmbrformat));
             byte[] responsebuffer = { };
             socket.Receive(responsebuffer);
-            string response = JObject.Parse(Encoding.ASCII.GetString(responsebuffer)).Value<string>("response");
+            string response = JObject.Parse(Encoding.Unicode.GetString(responsebuffer)).Value<string>("response");
+
         }
 
         private void SetupMonitor()
@@ -72,6 +78,7 @@ namespace VM_Battle_Royale
             while (!socket.Connected)
             {
                 socket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
+                _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
             }
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "vm");
@@ -79,12 +86,12 @@ namespace VM_Battle_Royale
             dict.Add("pass", File.ReadAllText("vncpasssetup.txt"));
             IPEndPoint endPoint = (IPEndPoint)socket.LocalEndPoint;
             dict.Add("ip", endPoint.Address.ToString() + endPoint.Port.ToString());
-            socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
+            socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
             File.Delete("vncpasssetup.txt");
             RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
             RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
-            string test = Environment.GetCommandLineArgs()[0] + @"-setupfinished";
-            startup.SetValue("VMBR Monitor", test.Insert(0, '"'.ToString()).Insert(Environment.GetCommandLineArgs()[0].Length + 1, '"'.ToString()));
+            string test = '"' + Environment.CurrentDirectory + @"""VM Battle Royale Monitor.exe""" + @"-setupfinished";
+            startup.SetValue("VMBR Monitor", test);
         }
 
         private string ReRunPrograms()
@@ -132,6 +139,20 @@ namespace VM_Battle_Royale
                     Hide();
                 }
             }
+        }
+
+        private static void KeepAlive(Object obj)
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("command", "keepalive");
+            dict.Add("arg1", (string)obj);
+            while (true)
+            {
+                Thread.Sleep(10000);
+                string JSONKeepAlive = JsonConvert.SerializeObject(dict);
+                _keepalive.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
+            }
+
         }
     }
 }
