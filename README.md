@@ -1,6 +1,6 @@
 # VMBattleRoyale
 
-an idea guest1352 (funy monkey) came up with. michaelepica and supermyl are working on this.
+an idea guest1352 (funy monkey) came up with. michaelepica and CRD716 are working on this.
 
 ## Download
 ### Stable Build
