@@ -64,7 +64,7 @@ namespace VM_Battle_Royale
         private static void RecieveCallBack(IAsyncResult ar)
             {
             //How the server recieves things.
-           int recieved = new int();
+            int recieved = new int();
             Socket socket = (Socket)ar.AsyncState;
             try
             {
@@ -124,7 +124,7 @@ namespace VM_Battle_Royale
                     };
                     //Check if the client disconnected. (please someone make this better holy crap)
                     Task.Run(() => CheckIfDisconnected(socket));
-                    try 
+                    try
                     {
                         vmandpass.Add(end.Address, convert);
                     }
@@ -305,7 +305,32 @@ namespace VM_Battle_Royale
                     }
                     else if (usernames.Count != vmandpass.Count)
                     {
-                        dict.Add("response", "Failed to start the game. Reason: There aren't the same amount of VMS connected as interfaces. \n This means that some vm(s) or interface(s) have not been connected to the server.");
+                        //bool found = false;
+                        dict.Add("response", "Failed to start the game. Reason: There aren't the same amount of VMS connected as interfaces. \n This means that some vm(s) or interface(s) have not been connected to the server. ");
+                        foreach (KeyValuePair<string, Socket> kvp in usernames)
+                        {
+                            IPEndPoint end = (IPEndPoint)kvp.Value.RemoteEndPoint;
+                            if (!vmandpass.TryGetValue(end.Address, out _))
+                            {
+                                dict["response"] = dict["response"] + "\n" + kvp.Key + "'s VM is not connected.";
+                            }
+                        }
+                        /*
+                        foreach(KeyValuePair<IPAddress,VMAndPass> kvp2 in vmandpass)
+                        {
+                            foreach (KeyValuePair<string, Socket> kvp in usernames)
+                            {
+                                IPEndPoint end = (IPEndPoint)kvp.Value.RemoteEndPoint;
+                                if(kvp2.Key == end.Address)
+                                {
+                                    found = true; 
+                                }
+                            }
+                            if(!found)
+                            {
+
+                            }
+                        }*/
                     }
                     else if (gameState != GameState.Start)
                     {
@@ -487,6 +512,10 @@ namespace VM_Battle_Royale
                 Thread.Sleep(30000);
                 if (!socket.Connected)
                 {
+                    if(gameState == GameState.Start)
+                    {
+                        Disconnect(socket);
+                    }
                     IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
                     try
                     {
@@ -502,6 +531,7 @@ namespace VM_Battle_Royale
                     Thread.Sleep(120000);
                     CheckIfEliminated(socket);
                 }
+            
             }
         }
 

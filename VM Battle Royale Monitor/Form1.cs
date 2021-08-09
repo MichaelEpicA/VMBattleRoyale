@@ -53,7 +53,7 @@ namespace VM_Battle_Royale
         {
             string newngrokurl = ReRunPrograms();
             MessageBox.Show("This is the ReconnectToServer function.");
-            while (!socket.Connected)
+            while (!socket.Connected && !_keepalive.Connected)
             {
                 socket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
                 _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
@@ -75,7 +75,7 @@ namespace VM_Battle_Royale
         private void SetupMonitor()
         {
             string ngrokurl = ReRunPrograms();
-            while (!socket.Connected)
+            while (!socket.Connected && !_keepalive.Connected)
             {
                 socket.Connect(IPAddress.Parse("107.209.49.185"), 13000);
                 _keepalive.Connect(IPAddress.Parse("107.209.49.185"), 13001);
@@ -101,7 +101,7 @@ namespace VM_Battle_Royale
             p.StartInfo.Arguments = "tcp 5900";
             p.StartInfo.CreateNoWindow = false;
             p.Start();
-            Thread.Sleep(15000);
+            Thread.Sleep(5000);
             System.Net.WebClient webClient = new System.Net.WebClient();
             byte[] data = webClient.DownloadData("http://127.0.0.1:4040/api/tunnels");
             string webData = Encoding.ASCII.GetString(data);

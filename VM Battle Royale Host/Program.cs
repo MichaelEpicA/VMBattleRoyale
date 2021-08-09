@@ -122,7 +122,14 @@ namespace VM_Battle_Royale
             Array.Copy(_buffer, tempbuffer, asyncrec);
             string text = Encoding.Unicode.GetString(tempbuffer);
             string value = JObject.Parse(text)["command"].ToString();
-            string response = JObject.Parse(text)["response"].ToString();
+            string response;
+            try
+            {
+                 response = JObject.Parse(text)["response"].ToString();
+            } catch
+            {
+                response = "error";
+            }
           
             if (value == "username")
             {   //If the username already exists, we reprompt the user.
