@@ -81,8 +81,6 @@ namespace VM_Battle_Royale
 
 		public static string RandomString(int length = 7)
 		{
-			const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@";
-			Random rand = new Random();
 
 			string generatedString = "";
 
@@ -90,7 +88,7 @@ namespace VM_Battle_Royale
 			{
 			byte[] randomBytes = new byte[sizeof(int)];
 			crypto.GetBytes(randomBytes);
-			generatedString = "" + BitConverter.ToInt32(randomBytes);
+			generatedString = "" + BitConverter.ToString(randomBytes);
 			}
 
 			return generatedString;
