@@ -126,7 +126,7 @@ namespace VM_Battle_Royale
             try
             {
                  response = JObject.Parse(text)["response"].ToString();
-            } catch
+            } catch(NullReferenceException)
             {
                 response = "error";
             }
@@ -213,12 +213,15 @@ namespace VM_Battle_Royale
                 if(JObject.Parse(text)["gamestate"].ToString() == "PLAY")
                 {
                     gameState = GameState.Play;
+                    Console.WriteLine("Game has began for real! Hacking is now enabled. Go!");
                 } else if(JObject.Parse(text)["gamestate"].ToString() == "GRACE")
                 {
                     gameState = GameState.Grace;
+                    Console.WriteLine("Game has started! Protect your vm as good as possible within 1 minute!");
                 } else if(JObject.Parse(text)["gamestate"].ToString() == "END")
                 {
                     gameState = GameState.End;
+                    Console.WriteLine("Game has ended.");
                 }
                 asyncrec = 0;
                 _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), _clientSocket);

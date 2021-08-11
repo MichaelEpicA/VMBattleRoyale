@@ -20,6 +20,7 @@ namespace VM_Battle_Royale
         static Socket _keepalive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         static Thread thr = new Thread(KeepAliveStart);
         static int maxkeepalivepingsfailed = 10;
+        static bool debug = true;
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
@@ -283,14 +284,44 @@ namespace VM_Battle_Royale
             if (command == "startgame")
             {
                 //Starts the game, pretty obvious.
-                if (usernames.Count == vmandpass.Count && usernames.Count >= 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
+                if(debug)
+                {
+                    Console.WriteLine("Debug mode enabled. Starting without checking conditions.");
+                    gameState = GameState.Grace;
+                    foreach (KeyValuePair<string, Socket> kvp in usernames)
+                    {
+                        Dictionary<string, string> dict = new Dictionary<string, string>();
+                        dict.Add("command", "gamestatechange");
+                        dict.Add("gamestate", "GRACE");
+                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                    }
+                    Thread.Sleep(60000);
+                    gameState = GameState.Play;
+                    foreach (KeyValuePair<string, Socket> kvp in usernames)
+                    {
+                        Dictionary<string, string> dict = new Dictionary<string, string>();
+                        dict.Add("command", "gamestatechange");
+                        dict.Add("gamestate", "PLAY");
+                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                    }
+                }
+                else if (usernames.Count == vmandpass.Count && usernames.Count >= 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
                 {
                     gameState = GameState.Grace;
                     foreach (KeyValuePair<string, Socket> kvp in usernames)
                     {
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
-                        dict.Add("gamestate", "graceperiod");
+                        dict.Add("gamestate", "GRACE");
+                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                    }
+                    Thread.Sleep(60000);
+                    gameState = GameState.Play;
+                    foreach (KeyValuePair<string, Socket> kvp in usernames)
+                    {
+                        Dictionary<string, string> dict = new Dictionary<string, string>();
+                        dict.Add("command", "gamestatechange");
+                        dict.Add("gamestate", "PLAY");
                         socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                 }
@@ -469,7 +500,7 @@ namespace VM_Battle_Royale
             {
                 Disconnect(socket);
             }
-            }
+                }
         //Disconnect function, is used a lot, if you wanna change what the server does when a client disconnects, use this.
         public static void Disconnect(Socket socket)
         {
@@ -515,21 +546,24 @@ namespace VM_Battle_Royale
                     if(gameState == GameState.Start)
                     {
                         Disconnect(socket);
-                    }
-                    IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
-                    try
+                    } else
                     {
-                        vmandpass[end.Address].Disconnected = true;
+                        IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
+                        try
+                        {
+                            vmandpass[end.Address].Disconnected = true;
+                        }
+                        catch
+                        {
+                            VMAndPass e = new VMAndPass();
+                            e.Disconnected = true;
+                            vmandpass.Add(end.Address, e);
+                        }
+                        //2 minutes is the timeout, and then it checks if they were eliminated.
+                        Thread.Sleep(120000);
+                        CheckIfEliminated(socket);
                     }
-                    catch
-                    {
-                        VMAndPass e = new VMAndPass();
-                        e.Disconnected = true;
-                        vmandpass.Add(end.Address, e);
-                    }
-                    //2 minutes is the timeout, and then it checks if they were eliminated.
-                    Thread.Sleep(120000);
-                    CheckIfEliminated(socket);
+                   
                 }
             
             }
