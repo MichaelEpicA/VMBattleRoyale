@@ -113,4 +113,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: VM.Battle.Royale.Monitor-linux
-        path: D:\a\VMBattleRoyale\VM Battle Royale Server\bin\release\netcoreapp3.1\linux-x64\publish\VM Battle Royale Monitor
+        path: D:\a\VMBattleRoyale\VM Battle Royale Monitor\bin\release\netcoreapp3.1\linux-x64\publish\VM Battle Royale Monitor
