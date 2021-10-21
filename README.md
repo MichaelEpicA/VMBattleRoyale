@@ -20,6 +20,3 @@ an idea guest1352 (funy monkey) came up with. michaelepica and CRD716 are workin
 
 # Warning
 This is in very early beta and has many security flaws. None of the authors are responsible for any damage to your system. Play/Use at your own risk.
-
-
-#twillioquest
