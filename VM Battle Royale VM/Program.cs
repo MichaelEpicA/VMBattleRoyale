@@ -60,6 +60,7 @@ namespace VM_Battle_Royale
 		}
 
 		static void SetupPassword() {
+			//forcing build
 			string vncserver = @"""C:\\Program Files\\RealVNC\\VNC Server\\vncpasswd.exe""";
 			Console.WriteLine("Set your vnc password. (Other players will see this!) Leave black to randomly generate one.");
 			string password = Console.ReadLine();
