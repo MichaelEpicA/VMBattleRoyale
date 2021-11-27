@@ -65,10 +65,10 @@ namespace VM_Battle_Royale
             Thread th = new Thread(KeepAlive);
             IPEndPoint end = (IPEndPoint)socket.LocalEndPoint;
             th.Start(end.Address.ToString());
-            socket.Send(Encoding.Unicode.GetBytes(vmbrformat));
+            socket.Send(Encoding.UTF8.GetBytes(vmbrformat));
             byte[] responsebuffer = { };
             socket.Receive(responsebuffer);
-            string response = JObject.Parse(Encoding.Unicode.GetString(responsebuffer)).Value<string>("response");
+            string response = JObject.Parse(Encoding.UTF8.GetString(responsebuffer)).Value<string>("response");
 
         }
 
@@ -86,12 +86,12 @@ namespace VM_Battle_Royale
             dict.Add("pass", File.ReadAllText("vncpasssetup.txt"));
             IPEndPoint endPoint = (IPEndPoint)socket.LocalEndPoint;
             dict.Add("ip", endPoint.Address.ToString() + endPoint.Port.ToString());
-            socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+            socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
             //File.Delete("vncpasssetup.txt");
             RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+            /*RegistryKey startup = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
             string test = '"' + Environment.CurrentDirectory + @"""VM Battle Royale Monitor.exe""" + @"-setupfinished";
-            startup.SetValue("VMBR Monitor", test);
+            startup.SetValue("VMBR Monitor", test);*/
         }
 
         private string ReRunPrograms()
@@ -150,7 +150,7 @@ namespace VM_Battle_Royale
             {
                 Thread.Sleep(10000);
                 string JSONKeepAlive = JsonConvert.SerializeObject(dict);
-                _keepalive.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
+                _keepalive.Send(Encoding.UTF8.GetBytes(JSONKeepAlive));
             }
 
         }

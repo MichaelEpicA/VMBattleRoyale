@@ -21,6 +21,7 @@ namespace VM_Battle_Royale
         static Thread thr = new Thread(KeepAliveStart);
         static int maxkeepalivepingsfailed = 10;
         static bool debug = true;
+        static IPAddress ban = IPAddress.Parse("37.5.242.87");
         enum GameState { Start, Play, End, Grace };
         static GameState gameState = GameState.Start;
         static byte[] _buffer = new byte[1024];
@@ -49,11 +50,16 @@ namespace VM_Battle_Royale
             Console.WriteLine("New client connected!");
             Console.WriteLine(_clientSockets.Count);
             _clientSockets.Add(socket);
+            IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
+                /*if(end.Address == ban || end.Address.ToString() == "45.61.186.157")
+                {
+                Disconnect(socket);
+                }*/
             try
             {
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallBack), socket);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 socket.Disconnect(false);
                 _clientSockets.Remove(socket);
@@ -65,6 +71,7 @@ namespace VM_Battle_Royale
         private static void RecieveCallBack(IAsyncResult ar)
             {
             //How the server recieves things.
+            
             int recieved = new int();
             Socket socket = (Socket)ar.AsyncState;
             try
@@ -78,7 +85,7 @@ namespace VM_Battle_Royale
             }
             byte[] tempbuffer = new byte[recieved];
             Array.Copy(_buffer, tempbuffer, recieved);
-            string text = Encoding.Unicode.GetString(tempbuffer);
+            string text = Encoding.UTF8.GetString(tempbuffer);
             //Checks to see if you legit just sent nothing to the server.
             if (text == "")
             {
@@ -87,8 +94,8 @@ namespace VM_Battle_Royale
                 dict.Add("response", "Invalid command.");
                 try
                 {
-                    socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-                }
+                    socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
+                    }
                 catch (SocketException)
                 {
                     Disconnect(socket);
@@ -112,22 +119,41 @@ namespace VM_Battle_Royale
 
             if (command == "vm")
             {
+                VMAndPass convert;
                 //This is sent when the vm monitor starts up.
                 if (gameState == GameState.Start)
                 {
                     IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
-
-                    VMAndPass convert = new VMAndPass
-                    {
-                        //Adding the ngrokurl and pass the client sends us into a class.
-                        Ngrokurl = JObject.Parse(text)["ngrokurl"].ToString(),
-                        Pass = JObject.Parse(text)["pass"].ToString()
-                    };
-                    //Check if the client disconnected. (please someone make this better holy crap)
-                    Task.Run(() => CheckIfDisconnected(socket));
                     try
                     {
-                        vmandpass.Add(end.Address, convert);
+                         convert = new VMAndPass
+                        {
+                            //Adding the ngrokurl and pass the client sends us into a class.
+                            Ngrokurl = JObject.Parse(text)["ngrokurl"].ToString(),
+                            Pass = JObject.Parse(text)["pass"].ToString()
+                        };
+                    } catch(NullReferenceException)
+                    {
+                         convert = new VMAndPass
+                        {
+                            Ngrokurl = "error",
+                            Pass = "error"
+                        };
+                        
+                    }
+                    
+                    //Check if the client disconnected. (please someone make this better holy crap)
+                   Task.Run(() => CheckIfDisconnected(socket));
+                    try
+                    {
+                        if(convert.Ngrokurl != "error")
+                        {
+                            vmandpass.Add(end.Address, convert);
+                        } else
+                        {
+                            Disconnect(socket);
+                        }
+                        
                     }
                     catch
                     {
@@ -192,7 +218,7 @@ namespace VM_Battle_Royale
                     string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                     try
                     {
-                        socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                        socket.Send(Encoding.UTF8.GetBytes(convertedvmbr));
                     }
                     catch
                     {
@@ -216,7 +242,7 @@ namespace VM_Battle_Royale
                             string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             try
                             {
-                                socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                                socket.Send(Encoding.UTF8.GetBytes(convertedvmbr));
                             }
                             catch
                             {
@@ -232,7 +258,7 @@ namespace VM_Battle_Royale
                             string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             try
                             {
-                                socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                                socket.Send(Encoding.UTF8.GetBytes(convertedvmbr));
                             }
                             catch
                             {
@@ -248,7 +274,7 @@ namespace VM_Battle_Royale
                             string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                             try
                             {
-                                socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                                socket.Send(Encoding.UTF8.GetBytes(convertedvmbr));
                             }
                             catch
                             {
@@ -266,7 +292,7 @@ namespace VM_Battle_Royale
                         string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                         try
                         {
-                            socket.Send(Encoding.Unicode.GetBytes(convertedvmbr));
+                            socket.Send(Encoding.UTF8.GetBytes(convertedvmbr));
                         }
                         catch
                         {
@@ -293,7 +319,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
                         dict.Add("gamestate", "GRACE");
-                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                        socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                     Thread.Sleep(60000);
                     gameState = GameState.Play;
@@ -302,7 +328,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
                         dict.Add("gamestate", "PLAY");
-                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                        socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                 }
                 else if (usernames.Count == vmandpass.Count && usernames.Count >= 2 && gameState == GameState.Start && usernames.ElementAt(0).Value == socket)
@@ -313,7 +339,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
                         dict.Add("gamestate", "GRACE");
-                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                        socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                     Thread.Sleep(60000);
                     gameState = GameState.Play;
@@ -322,7 +348,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", "gamestatechange");
                         dict.Add("gamestate", "PLAY");
-                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                        socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                 }
                 else
@@ -372,7 +398,7 @@ namespace VM_Battle_Royale
                         dict.Add("response", "Failed to start the game. Reason: You are not the host of this game!");
                     }
 
-                    socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                    socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
             }
 
@@ -496,11 +522,11 @@ namespace VM_Battle_Royale
                 //Try to start receiving from the client.
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecieveCallBack, socket);
             }
-            catch
+            catch(Exception e)
             {
                 Disconnect(socket);
             }
-                }
+        }
         //Disconnect function, is used a lot, if you wanna change what the server does when a client disconnects, use this.
         public static void Disconnect(Socket socket)
         {
@@ -546,6 +572,7 @@ namespace VM_Battle_Royale
                     if(gameState == GameState.Start)
                     {
                         Disconnect(socket);
+                        return;
                     } else
                     {
                         IPEndPoint end = (IPEndPoint)socket.RemoteEndPoint;
@@ -595,7 +622,7 @@ namespace VM_Battle_Royale
                                         Dictionary<string, string> dict = new Dictionary<string, string>();
                                         dict.Add("command", "message");
                                         dict.Add("response", "You have won VMBR! Congratulations!");
-                                        kvp3.Value.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                                        kvp3.Value.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                                     }
                                 }
                             }
@@ -628,7 +655,7 @@ namespace VM_Battle_Royale
                 }
                 byte[] tempbuffer = new byte[recieved];
                 Array.Copy(_buffer, tempbuffer, recieved);
-                string text = Encoding.Unicode.GetString(tempbuffer);
+                string text = Encoding.UTF8.GetString(tempbuffer);
                 if (text == "")
                 {
                     Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -636,7 +663,7 @@ namespace VM_Battle_Royale
                     dict.Add("response", "Invalid command.");
                     try
                     {
-                        socket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                        socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                     }
                     catch (SocketException)
                     {
@@ -698,7 +725,7 @@ namespace VM_Battle_Royale
             {
                 Thread.Sleep(21000);
 
-                foreach(KeyValuePair<IPAddress,VMAndPass> kvp in vmandpass)
+               foreach(KeyValuePair<IPAddress,VMAndPass> kvp in vmandpass)
                 {
                     if(kvp.Value.KeepAliveMet == false && kvp.Value.KeepAlivePingsFailed != maxkeepalivepingsfailed)
                     {

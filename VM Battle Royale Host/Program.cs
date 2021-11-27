@@ -54,7 +54,7 @@ namespace VM_Battle_Royale
             dict.Add("command", "username");
             dict.Add("playername", username);
             string vmbrusername = JsonConvert.SerializeObject(dict);
-            _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
+            _clientSocket.Send(Encoding.UTF8.GetBytes(vmbrusername));
             asyncrec = 1;
             SendLoop();
             Console.ReadLine();
@@ -100,7 +100,7 @@ namespace VM_Battle_Royale
                         Dictionary<string, string> dict = new Dictionary<string, string>();
                         dict.Add("command", input);
                         string vmbrstartgame = JsonConvert.SerializeObject(dict);
-                        _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrstartgame));
+                        _clientSocket.Send(Encoding.UTF8.GetBytes(vmbrstartgame));
                         asyncrec = 1;
                     }
                     else
@@ -120,7 +120,7 @@ namespace VM_Battle_Royale
             asyncrec = socket.EndReceive(ar);
             byte[] tempbuffer = new byte[asyncrec];
             Array.Copy(_buffer, tempbuffer, asyncrec);
-            string text = Encoding.Unicode.GetString(tempbuffer);
+            string text = Encoding.UTF8.GetString(tempbuffer);
             string value = JObject.Parse(text)["command"].ToString();
             string response;
             try
@@ -184,7 +184,7 @@ namespace VM_Battle_Royale
                 dict.Add("persontobehacked", exists);
                 //Calls the hack interface to pull it up.
                 HackTUI();
-                _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+                _clientSocket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
             }
             else if (value == "hackperson")
             {
@@ -233,7 +233,7 @@ namespace VM_Battle_Royale
             //Says that it's listing usernames, and then sends a request to get those usernames.
             Console.WriteLine("Listing usernames....");
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            dict.Add("command", "showusername");
+            dict.Add("command", "showusernames");
             string vmbrcommand = JsonConvert.SerializeObject(dict);
             _clientSocket.Send(Encoding.ASCII.GetBytes(vmbrcommand));
             asyncrec = 1;
@@ -288,7 +288,7 @@ namespace VM_Battle_Royale
             dict.Add("command", input);
             dict.Add("playername", username);
             string vmbrusername = JsonConvert.SerializeObject(dict);
-            _clientSocket.Send(Encoding.Unicode.GetBytes(vmbrusername));
+            _clientSocket.Send(Encoding.UTF8.GetBytes(vmbrusername));
             asyncrec = 1;
             Thread th = new Thread(KeepAlive);
             th.Start(username);
@@ -303,7 +303,7 @@ namespace VM_Battle_Royale
             {
                 Thread.Sleep(10000);
                 string JSONKeepAlive = JsonConvert.SerializeObject(dict);
-                _keepalive.Send(Encoding.Unicode.GetBytes(JSONKeepAlive));
+                _keepalive.Send(Encoding.UTF8.GetBytes(JSONKeepAlive));
             }
             
         }
@@ -312,8 +312,8 @@ namespace VM_Battle_Royale
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "dc");
-            _clientSocket.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
-            _keepalive.Send(Encoding.Unicode.GetBytes(JsonConvert.SerializeObject(dict)));
+            _clientSocket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
+            _keepalive.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
             Environment.Exit(0);
         }
     }
