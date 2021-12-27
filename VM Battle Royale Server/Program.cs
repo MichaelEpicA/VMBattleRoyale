@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace VM_Battle_Royale
 {
     class Program
-    {
+    {   //Variables
         static List<Socket> _clientSockets = new List<Socket>();
         static Dictionary<string, Socket> usernames = new Dictionary<string, Socket>();
         static Dictionary<IPAddress, VMAndPass> vmandpass = new Dictionary<IPAddress, VMAndPass>();
