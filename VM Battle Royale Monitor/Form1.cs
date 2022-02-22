@@ -104,7 +104,7 @@ namespace VM_Battle_Royale
             Thread.Sleep(5000);
             System.Net.WebClient webClient = new System.Net.WebClient();
             byte[] data = webClient.DownloadData("http://127.0.0.1:4040/api/tunnels");
-            string webData = Encoding.ASCII.GetString(data);
+            string webData = Encoding.UTF8.GetString(data);
             JObject obj = JObject.Parse(webData);
             JValue tunnels = obj.SelectToken("tunnels")[0].ToObject<JObject>().Value<JValue>("public_url");
             try
