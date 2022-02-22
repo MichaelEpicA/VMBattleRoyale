@@ -235,7 +235,7 @@ namespace VM_Battle_Royale
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict.Add("command", "showusernames");
             string vmbrcommand = JsonConvert.SerializeObject(dict);
-            _clientSocket.Send(Encoding.ASCII.GetBytes(vmbrcommand));
+            _clientSocket.Send(Encoding.UTF8.GetBytes(vmbrcommand));
             asyncrec = 1;
         }
 

@@ -177,7 +177,7 @@ namespace VM_Battle_Royale
                             //If the vm failed to reconnect with in the time limit instead they will be eliminated.
                             try
                             {
-                                socket.Send(Encoding.ASCII.GetBytes("ERROR: You've been eliminated from this game. Please wait until the game ends to rejoin!"));
+                                socket.Send(Encoding.UTF8.GetBytes("ERROR: You've been eliminated from this game. Please wait until the game ends to rejoin!"));
                             }
                             catch
                             {
@@ -192,7 +192,7 @@ namespace VM_Battle_Royale
                         //If the vm never existed in the first place.
                         try
                         {
-                            socket.Send(Encoding.ASCII.GetBytes("ERROR: Sorry, the game has already started. You can't join right now. Wait for the end of the game!"));
+                            socket.Send(Encoding.UTF8.GetBytes("ERROR: Sorry, the game has already started. You can't join right now. Wait for the end of the game!"));
                         }
                         catch
                         {
@@ -419,7 +419,7 @@ namespace VM_Battle_Royale
                 string convertedvmbr = JsonConvert.SerializeObject(vmbrconvert);
                 try
                 {
-                    socket.Send(Encoding.ASCII.GetBytes(convertedvmbr));
+                    socket.Send(Encoding.UTF8.GetBytes(convertedvmbr));
                 }
                 catch (SocketException)
                 {
@@ -443,7 +443,7 @@ namespace VM_Battle_Royale
                         i++;
                     }
                     string vmbr = JsonConvert.SerializeObject(dict);
-                    socket.Send(Encoding.ASCII.GetBytes(vmbr));
+                    socket.Send(Encoding.UTF8.GetBytes(vmbr));
                 }
                 //If the grace period is up, then we call this.
                 else if (gameState == GameState.Grace)
@@ -451,7 +451,7 @@ namespace VM_Battle_Royale
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: Cannot hack at the momment. Reason: The 1 minute grace period is still on...WHAT ARE YOU EVEN DOING. PROTECT YOUR VM!");
-                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
+                    socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
                 //Game hasn't started yet, this is just waiting for it to start.
                 else if (gameState == GameState.Start)
@@ -459,7 +459,7 @@ namespace VM_Battle_Royale
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: The game hasn't even started yet.");
-                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
+                    socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
                 }
                 //Game ended.
                 else if (gameState == GameState.End)
@@ -467,7 +467,7 @@ namespace VM_Battle_Royale
                     Dictionary<string, string> dict = new Dictionary<string, string>();
                     dict.Add("command", "message");
                     dict.Add("response", "ERROR: The game is over.");
-                    socket.Send(Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dict)));
+                    socket.Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict)));
 
                 }
 
@@ -487,7 +487,7 @@ namespace VM_Battle_Royale
                     Socket sockettohack;
                     usernames.TryGetValue(hackperson, out sockettohack);
                     //Sends the message.
-                    sockettohack.Send(Encoding.ASCII.GetBytes(responsesend));
+                    sockettohack.Send(Encoding.UTF8.GetBytes(responsesend));
                     //The rest of this just sends the important info used for hacking the user back to the client.
                     Dictionary<string, string> vmbrconvert2 = new Dictionary<string, string>();
                     vmbrconvert2.Add("command", "hackedperson");
@@ -499,7 +499,7 @@ namespace VM_Battle_Royale
                     vmbrconvert2.Add("pass", convert.Pass);
                     vmbrconvert2.Add("ip", convert.Ngrokurl);
                     string responsesend2 = JsonConvert.SerializeObject(vmbrconvert2);
-                    socket.Send(Encoding.ASCII.GetBytes(responsesend2));
+                    socket.Send(Encoding.UTF8.GetBytes(responsesend2));
                 }
 
             }
@@ -514,7 +514,7 @@ namespace VM_Battle_Royale
             catch (NullReferenceException)
             {
                 //Crash protection, VERY OLD code.
-                socket.Send(Encoding.ASCII.GetBytes("Bro please fuck off"));
+                socket.Send(Encoding.UTF8.GetBytes("Bro please fuck off"));
                 Disconnect(socket);
             }
             try
@@ -608,7 +608,7 @@ namespace VM_Battle_Royale
                     IPEndPoint end2 = (IPEndPoint)kvp.Value.RemoteEndPoint;
                     if (end2.Address == end.Address)
                     {
-                        kvp.Value.Send(Encoding.ASCII.GetBytes("RIP! " + kvp.Key + "has been eliminated from VMBR!"));
+                        kvp.Value.Send(Encoding.UTF8.GetBytes("RIP! " + kvp.Key + "has been eliminated from VMBR!"));
                         //Win condition for when the player destroys all other vms.
                         foreach (KeyValuePair<IPAddress, VMAndPass> kvp2 in vmandpass)
                         {
