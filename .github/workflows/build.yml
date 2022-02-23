@@ -84,15 +84,15 @@ jobs:
       with:
         name: VM.Battle.Royale.VM.Setup.exe
         path: D:\a\VMBattleRoyale\VMBattleRoyale\VM Battle Royale VM\bin\release\netcoreapp3.1\win-x64\publish\VM Battle Royale VM Setup.exe
-    - name: Upload Windows Host Artifact
+    - name: Upload Windows Client Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: VM.Battle.Royale.Host.exe
+        name: VM.Battle.Royale.Client.exe
         path: D:\a\VMBattleRoyale\VMBattleRoyale\VM Battle Royale Host\bin\release\netcoreapp3.1\win-x64\publish\VM Battle Royale Host.exe
     - name: Upload Linux Host Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: VM.Battle.Royale.Host-linux
+        name: VM.Battle.Royale.Client-linux
         path: D:\a\VMBattleRoyale\VMBattleRoyale\VM Battle Royale Host\bin\release\netcoreapp3.1\linux-x64\publish\VM Battle Royale Host
     - name: Upload Windows Monitor Artifact
       uses: actions/upload-artifact@v2
