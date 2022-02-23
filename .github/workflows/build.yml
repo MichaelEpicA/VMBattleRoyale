@@ -72,8 +72,8 @@ jobs:
     
     - run: |
         dotnet publish -r win-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale VM/VM Battle Royale VM Setup.csproj"
-        dotnet publish -r win-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale Host/VM Battle Royale Host.csproj"
-        dotnet publish -r linux-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale Host/VM Battle Royale Host.csproj"
+        dotnet publish -r win-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale Host/VM Battle Royale Client.csproj"
+        dotnet publish -r linux-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale Host/VM Battle Royale Client.csproj"
         dotnet publish -r win-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale Monitor/VM Battle Royale Monitor.csproj"
         dotnet publish -r linux-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale Monitor/VM Battle Royale Monitor.csproj"
         dotnet publish -r win-x64 -p:PublishSingleFile=true -c release -p:publishTrimmed=true "VM Battle Royale Server/VM Battle Royale Server.csproj"
