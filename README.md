@@ -2,9 +2,6 @@
 
 an idea guest1352 (funy monkey) came up with. michaelepica and CRD716 are working on this.
 
-# Warning
-**This is in very early beta and has many security flaws. None of the authors are responsible for any damage to your system. Play/Use at your own risk.**
-
 ## Download
 ### Stable Build
 [Github Releases](https://github.com/MichaelEpicA/VMBattleRoyale/releases)
@@ -20,3 +17,6 @@ an idea guest1352 (funy monkey) came up with. michaelepica and CRD716 are workin
 *Run "VM Battle Royale VM\bin\Debug\netcoreapp3.1\VM Battle Royale VM Setup.exe"*
 ### On the Host
 *Run "VM Battle Royale Host\bin\Debug\netcoreapp3.1\VM Battle Royale Host.exe"*
+
+# Warning
+This is in very early beta and has many security flaws. None of the authors are responsible for any damage to your system. Play/Use at your own risk.
